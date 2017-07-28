@@ -1,0 +1,12 @@
+[package]
+name = "rundeck"
+version = "0.1.0"
+authors = ["Freyskeyd <simon.paitrault@gmail.com>"]
+
+[dependencies]
+clap = {version = "*", features = ["yaml"]}
+reqwest = "*"
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
+prettytable-rs = "^0.6"

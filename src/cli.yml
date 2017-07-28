@@ -1,0 +1,50 @@
+name: Rundeck CLI
+version: "1.0"
+author: Simon PAITRAULT <simon.paitrault@gmail.com>
+about: |
+
+    The Rundeck Command Line Interface is a tool to manage, run and display jobs and projects.
+    It use the Rundeck API, you must define a RUNDECK_URL and a RUNDECK_TOKEN.
+subcommands:
+    - list:
+        about: list projects, job, executions
+        subcommands:
+            - projects:
+                about: list all projects
+            - jobs:
+                about: list project jobs
+                args:
+                    - project:
+                        required: true
+                        help: Project name
+                    - quiet:
+                        short: q
+                        help: Display only job id
+            - executions:
+                about: Execution subcommand
+                subcommands:
+                    - project:
+                        about: "List executions of a project's job"
+                        args:
+                            - project:
+                                help: Display executions on a particular project
+                    - job:
+                        about: "List job's executions"
+                        args:
+                            - job_id:
+                                help: Display executions of a particular job
+    - run:
+        about: Run a particular job
+        subcommand:
+            - job:
+                about: Run a job
+                args:
+                    - job_id:
+                        required: true
+                        help: Job id to run
+    - kill:
+        about: Kill a job
+        args:
+            - job_id:
+                required: true
+                help: Job id to kill
