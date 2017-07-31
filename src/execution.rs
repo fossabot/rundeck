@@ -1,13 +1,4 @@
-use super::Job;
-
-use reqwest::Client;
-use serde_json;
-
-use prettytable::format;
-use prettytable::row::Row;
-use prettytable::cell::Cell;
-use std::io::Read;
-use super::construct_headers;
+use api::Job;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct DateField {
@@ -33,6 +24,6 @@ pub struct Execution {
     pub description: String
 }
 
-pub fn kill(client: &Client, url: &str, token: &str, execution_id: &str) {
+// pub fn kill(client: &Client, url: &str, token: &str, execution_id: &str) {
 
-}
+// }
