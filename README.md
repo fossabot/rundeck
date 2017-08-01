@@ -3,6 +3,9 @@
 Rundeck (CLI) is a Command Line Interface which aim to solve a lack of tools to directly interact with a Rundeck
 instance. The main goal is to run and check job's status.
 
+[![Build Status](https://travis-ci.org/Freyskeyd/Rundeck.svg?branch=master)](https://travis-ci.org/Freyskeyd/Rundeck)
+[![Crates.io Version](https://img.shields.io/crates/v/rundeck.svg)](https://crates.io/crates/nom)
+
 ![preview](./assets/preview.png)
 
 - [1. Main features](https://github.com/Freyskeyd/Rundeck#1-main-features)
