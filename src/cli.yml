@@ -11,15 +11,25 @@ subcommands:
         subcommands:
             - projects:
                 about: list all projects
+                args:
+                    - quiet:
+                        short: q
+                        help: Display only name
             - jobs:
                 about: list project jobs
                 args:
                     - project:
-                        required: true
                         help: Project name
                     - quiet:
                         short: q
                         help: Display only job id
+                    - filter:
+                        short: f
+                        long: filter
+                        takes_value: true
+                        multiple: true
+                    - completion:
+                        short: c
             - executions:
                 about: Execution subcommand
                 subcommands:
@@ -32,16 +42,31 @@ subcommands:
                         about: "List job's executions"
                         args:
                             - job_id:
+                                multiple: true
                                 help: Display executions of a particular job
     - run:
         about: Run a particular job
-        subcommand:
-            - job:
-                about: Run a job
-                args:
-                    - job_id:
-                        required: true
-                        help: Job id to run
+        args:
+            - project:
+                help: Project name
+                required: true
+            - job_id:
+                required: false
+                help: Job id to run
+            - filter:
+                short: f
+                long: filter
+                takes_value: true
+                multiple: true
+            - node:
+                long: node
+                required: true
+                takes_value: true
+            - opt:
+                short: o
+                long: opt
+                takes_value: true
+                multiple: true
     - kill:
         about: Kill a job
         args:
