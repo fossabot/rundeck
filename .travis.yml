@@ -74,7 +74,6 @@ before_cache:
 
 branches:
   only:
-    - /^v\d+\.\d+\.\d+.*$/
     - master
 
 notifications:
