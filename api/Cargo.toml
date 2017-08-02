@@ -1,0 +1,16 @@
+[package]
+name = "rundeck-api"
+version = "0.1.0"
+authors = ["Freyskeyd <simon.paitrault@gmail.com>"]
+description ="Rundeck API is a library to talk with Rundeck Application Programming Interface"
+repository = "https://github.com/Freyskeyd/Rundeck"
+readme= "README.md"
+keywords= ["rundeck", "api", "interface"]
+categories= ["api", "development-tools"]
+license= "MIT"
+
+[dependencies]
+reqwest = "^0"
+serde = "^1"
+serde_json = "^1"
+serde_derive = "^1"

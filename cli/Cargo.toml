@@ -1,0 +1,20 @@
+[package]
+name = "rundeck"
+version = "0.1.0"
+authors = ["Freyskeyd <simon.paitrault@gmail.com>"]
+description ="Rundeck (CLI) is a Command Line Interface which aim to solve a lack of tools to directly interact with a Rundeck instance."
+repository = "https://github.com/Freyskeyd/Rundeck"
+readme= "README.md"
+keywords= ["rundeck", "cli", "interface"]
+categories= ["command-line-utilities", "development-tools"]
+license= "MIT"
+
+[dependencies]
+clap = {version = "^2.25", features = ["yaml"]}
+reqwest = "^0"
+serde = "^1"
+serde_json = "^1"
+serde_derive = "^1"
+prettytable-rs = "^0.6"
+dialoguer = "0.1.0"
+

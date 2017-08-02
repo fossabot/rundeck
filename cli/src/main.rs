@@ -13,13 +13,13 @@ extern crate serde;
 extern crate serde_json;
 #[macro_use] extern crate serde_derive;
 extern crate dialoguer;
+extern crate rundeck_api as api;
 
 use std::env;
 use clap::App;
 use reqwest::header::{Headers, ContentType, Accept};
 
 mod job;
-mod api;
 mod project;
 mod execution;
 
