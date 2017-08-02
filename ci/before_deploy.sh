@@ -17,8 +17,12 @@ main() {
 
     test -f Cargo.lock || cargo generate-lockfile
 
+    cd ./cli
+
     # TODO Update this to build the artifacts that matter to you
     cross rustc --bin rundeck --target $TARGET --release -- -C lto
+
+    cd ../
 
     # TODO Update this to package the right artifacts
     cp target/$TARGET/release/rundeck $stage/

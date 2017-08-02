@@ -1,4 +1,8 @@
-use reqwest;
+extern crate reqwest;
+extern crate serde;
+extern crate serde_json;
+#[macro_use] extern crate serde_derive;
+
 use reqwest::header::{Headers, ContentType, Accept};
 use std::borrow::Cow;
 use std::io::Read;
