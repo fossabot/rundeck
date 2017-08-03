@@ -49,10 +49,18 @@ install:
   - sh ci/setup.sh
   - source ~/.cargo/env || true
 
+before_script:
+  - |
+    cargo install cargo-travis &&
+    export PATH=$HOME/.cargo/bin:$PATH
+
 script:
   - bash ci/run.sh
 
 after_script: set +e
+
+after_success:
+  - cargo coveralls --all --verbose
 
 before_deploy:
   - sh ci/before_deploy.sh
