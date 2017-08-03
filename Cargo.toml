@@ -3,4 +3,3 @@ members = ["api", "cli"]
 
 [replace]
 "rundeck-api:0.1.0" = {path = "api"}
-

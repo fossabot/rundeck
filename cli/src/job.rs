@@ -1,4 +1,4 @@
-use api::JobService;
+use api::job::JobService;
 use api::Job;
 use api::job::RunBody;
 use prettytable::format;
@@ -49,29 +49,29 @@ pub fn run(service: &JobService, job_id: &str, node: &str, options: Vec<&str>) {
 }
 
 // pub fn list_job_executions(service: &JobService, job: &str) {
-    // let mut res = client.get(&format!("{}job/{}/executions?authtoken={}", url, job, token )).unwrap()
-    //     .headers(construct_headers())
-    //     .send().unwrap();
+//     let mut res = client.get(&format!("{}job/{}/executions?authtoken={}", url, job, token )).unwrap()
+//         .headers(construct_headers())
+//         .send().unwrap();
 
-    // let mut content = String::new();
-    // let _ = res.read_to_string(&mut content);
+//     let mut content = String::new();
+//     let _ = res.read_to_string(&mut content);
 
-    // let executions: ExecutionPagination = serde_json::from_str(&content).unwrap();
-    // let mut table = table!(["ID", "PROJECT", "GROUP", "NAME", "STATUS", "STARTED BY", "LINK"]);
+//     let executions: ExecutionPagination = serde_json::from_str(&content).unwrap();
+//     let mut table = table!(["ID", "PROJECT", "GROUP", "NAME", "STATUS", "STARTED BY", "LINK"]);
 
-    // table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
-    // for e in executions.executions {
-    //     table.add_row(Row::new(vec![
-    //                            Cell::new(&e.id.to_string()),
-    //                            Cell::new(&e.project),
-    //                            Cell::new(&e.job.group),
-    //                            Cell::new(&e.job.name),
-    //                            Cell::new(&e.status),
-    //                            Cell::new(&e.user),
-    //                            Cell::new(&e.permalink)
-    //     ]));
-    // }
+//     table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
+//     for e in executions.executions {
+//         table.add_row(Row::new(vec![
+//                                Cell::new(&e.id.to_string()),
+//                                Cell::new(&e.project),
+//                                Cell::new(&e.job.group),
+//                                Cell::new(&e.job.name),
+//                                Cell::new(&e.status),
+//                                Cell::new(&e.user),
+//                                Cell::new(&e.permalink)
+//         ]));
+//     }
 
-    // table.printstd();
+//     table.printstd();
 // }
 

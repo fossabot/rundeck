@@ -21,7 +21,7 @@ use reqwest::header::{Headers, ContentType, Accept};
 
 mod job;
 mod project;
-mod execution;
+// mod execution;
 
 pub fn construct_headers() -> Headers {
     let mut headers = Headers::new();
@@ -34,7 +34,10 @@ fn main() {
     let url = env::var("RUNDECK_URL").expect("RUNDECK_URL NOT DEFINED");
     let authtoken = env::var("RUNDECK_TOKEN").expect("RUNDECK_TOKEN NOT DEFINED");
 
-    let rundeck = api::Client::new(url, authtoken);
+    let rundeck = match api::client::Client::new(url, authtoken) {
+        Ok(r) => r,
+        Err(_) => panic!("")
+    };
 
     if let Err(e) = rundeck.check_connectivity() {
         println!("Rundeck is not accessible on HTTP/HTTPs protocol.");
