@@ -1,4 +1,4 @@
-use super::Client;
+use client::Client;
 // use std::borrow::Cow;
 use serde_json;
 
@@ -47,7 +47,7 @@ impl<'a> ProjectService<'a> {
 
     pub fn list(&self) -> Vec<Project> {
         let mut filters: Vec<&str> = Vec::new();
-        let ret = self.client.perform_get("projects", &mut filters);
+        let ret = self.client.perform_get("projects", &mut filters).unwrap();
 
         serde_json::from_str(&ret).unwrap()
     }
