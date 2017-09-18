@@ -30,6 +30,8 @@ subcommands:
                         multiple: true
                     - completion:
                         short: c
+            - tokens:
+                about: list tokens
             - executions:
                 about: Execution subcommand
                 subcommands:
@@ -67,6 +69,23 @@ subcommands:
                 long: opt
                 takes_value: true
                 multiple: true
+    - new:
+        subcommands:
+            - token:
+                args:
+                    - user:
+                        required: true
+                    - duration:
+                        short: d
+                        long: duration
+                        takes_value: true
+                        multiple: false
+                    - role:
+                        short: r
+                        long: role
+                        takes_value: true
+                        multiple: true
+
     - kill:
         about: Kill a job
         args:

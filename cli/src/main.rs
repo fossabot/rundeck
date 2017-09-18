@@ -21,6 +21,7 @@ use reqwest::header::{Headers, ContentType, Accept};
 
 mod job;
 mod project;
+mod tokens;
 // mod execution;
 
 pub fn construct_headers() -> Headers {
@@ -46,6 +47,7 @@ fn main() {
 
     let job_service = api::JobService::from_client(&rundeck).expect("Cannot create a valid JobService");
     let project_service = api::ProjectService::from_client(&rundeck).expect("Cannot create a valid ProjectService");
+    let token_service = api::TokenService::from_client(&rundeck).expect("Cannot create a valid TokenService");
 
     let mut help_bytes: Vec<u8> = Vec::new();
     let yaml = load_yaml!("cli.yml");
@@ -62,7 +64,7 @@ fn main() {
                 ("projects", Some(matches)) =>
                     project::list_projects(&project_service, matches.is_present("quiet")),
 
-                    ("jobs", Some(matches)) =>
+                ("jobs", Some(matches)) =>
                     {
                         let project = {
                             if matches.value_of("project").is_none() {
@@ -109,6 +111,9 @@ fn main() {
                     }
 
                 }
+
+                ("tokens", Some(tokens_matches)) => tokens::list_tokens(&token_service),
+
                 _ =>
                     println!("{}", String::from_utf8(help_bytes).expect("Help message was invalid UTF8")),
             }
@@ -142,8 +147,16 @@ fn main() {
             job::run(&job_service, &job_id, matches.value_of("node").unwrap(), matches.values_of("opt").map(|x|x.collect::<Vec<_>>()).unwrap());
         },
 
-        ("kill", Some(_)) =>{}
+        ("kill", Some(_)) => {}
             // execution::kill(&client, &url, &authtoken, &matches.value_of("execution_id").unwrap()),
+
+        ("new", Some(matches)) => {
+            match matches.subcommand() {
+                ("token", Some(matches)) => tokens::new(&token_service, matches.value_of("user").unwrap(), matches.value_of("duration"), matches.values_of("role").map(|x| x.collect::<Vec<_>>()).unwrap_or(Vec::new())
+                                                        ),
+                _ => println!("{}", String::from_utf8(help_bytes).expect("Help message was invalid UTF8")),
+            }
+        }
 
         ("", None) =>
             println!("{}", String::from_utf8(help_bytes).expect("Help message was invalid UTF8")),

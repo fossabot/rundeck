@@ -4,5 +4,6 @@ pub enum ClientError {
     InternalClientCreation,
     MalformedUrl,
     UncompatibleVersion,
-    TimedOut
+    TimedOut,
+    BadRequest(String)
 }
