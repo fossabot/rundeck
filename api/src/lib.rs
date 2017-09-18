@@ -9,6 +9,8 @@ pub mod error;
 pub mod job;
 pub mod client;
 pub mod project;
+pub mod token;
 
 pub use self::job::{JobService, Job};
+pub use self::token::{TokenService, Token};
 pub use self::project::{ProjectService, Project};

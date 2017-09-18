@@ -146,7 +146,7 @@ impl<'a> Client<'a> {
         Ok(content)
     }
 
-    pub fn perform_post(&self, url: &str, body: &str) -> Result<(), ClientError> {
+    pub fn perform_post(&self, url: &str, body: &str) -> Result<String, ClientError> {
         let mut query_string: Vec<String> = Vec::new();
 
         query_string.push("format=json".to_string());
@@ -158,13 +158,23 @@ impl<'a> Client<'a> {
         let mut headers = self.headers.clone();
         headers.set(ContentType::json());
 
-        self.inner.post(url).unwrap()
+        let mut res = self.inner.post(url).unwrap()
             .headers(headers)
             .body(body.to_string())
             .send()
             .unwrap();
 
-        Ok(())
+        let mut content = String::new();
+        let _ = res.read_to_string(&mut content);
+
+        if res.status().is_success() {
+            Ok(content)
+        } else {
+            match res.status() {
+                reqwest::StatusCode::BadRequest => Err(ClientError::BadRequest(content)),
+                _ => Ok(content)
+            }
+        }
     }
 }
 

@@ -152,6 +152,7 @@ impl<'a> JobService<'a> {
 
             body.arg_string = Some(arg_string.join(" "));
         }
+
         let body = serde_json::to_string(&body).unwrap();
         let _ = self.client.perform_post(&format!("job/{}/run", job), &body);
     }
