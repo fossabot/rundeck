@@ -23,9 +23,9 @@ pub fn list_tokens(service: &TokenService) {
 pub fn new(service: &TokenService, user: &str, duration: Option<&str>, roles:Vec<&str>) {
 
     let body = TokenBody {
-        user: user.to_string(),
-        roles: roles.iter().cloned().map(|x| x.to_string()).collect::<Vec<String>>(),
-        duration: duration.unwrap_or("").to_string()
+        user: user.into(),
+        roles: roles.into_iter().map(|x| x.into()).collect::<_>(),
+        duration: duration.unwrap_or("").into()
     };
 
     let token = service.new(&body);

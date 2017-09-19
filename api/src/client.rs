@@ -247,7 +247,6 @@ mod tests {
 
         let result = match Client::new(format!("{}/12/", mockito::SERVER_URL), "token") {
             Ok(c) => {
-                println!("hola");
                 match c.check_connectivity() {
                     Ok(_) => true,
                     Err(_) => false

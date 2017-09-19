@@ -1,19 +1,17 @@
+use std::borrow::Cow;
 use client::Client;
 use serde_json;
 use std::collections::HashMap;
-use error::ClientError;
+use error::{ClientError, ApiError};
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Token {
-    pub user: String,
-    pub id: String,
-    creator: String,
-    expiration: String,
-    roles: Vec<String>,
+pub struct Token<'a> {
+    pub user: Cow<'a, str>,
+    pub id: Cow<'a, str>,
+    creator: Cow<'a, str>,
+    expiration: Cow<'a, str>,
+    roles: Vec<Cow<'a, str>>,
     expired: bool
-}
-
-impl Token {
 }
 
 /// Compile filters
@@ -35,23 +33,15 @@ pub fn compile_filters(filters: Vec<&str>) -> Vec<String> {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct TokenBody {
-    pub user: String,
-    pub roles: Vec<String>,
-    pub duration: String
+pub struct TokenBody<'a> {
+    pub user: Cow<'a, str>,
+    pub roles: Vec<Cow<'a, str>>,
+    pub duration: Cow<'a, str>
 }
 
 #[derive(Clone)]
 pub struct TokenService<'a> {
     client: &'a Client<'a>
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct TokenCreationError {
-    error: bool,
-    apiversion: i16,
-    errorCode: String,
-    pub message: String
 }
 
 impl<'a> TokenService<'a> {
@@ -60,7 +50,7 @@ impl<'a> TokenService<'a> {
     /// # Example
     /// ```
     /// use rundeck_api::client::Client;
-    /// use rundeck_api::job::TokenService;
+    /// use rundeck_api::token::TokenService;
     ///
     /// let client = Client::new("http://localhost/url/12", "token").unwrap();
     ///
@@ -84,25 +74,15 @@ impl<'a> TokenService<'a> {
         serde_json::from_str(&ret).unwrap()
     }
 
-    pub fn new(&self, body: &TokenBody) -> Result<Token, TokenCreationError> {
+    pub fn new(&self, body: &TokenBody) -> Result<Token, ApiError> {
         match self.client.perform_post("tokens", &serde_json::to_string(&body).unwrap()) {
             Ok(ret) => Ok(serde_json::from_str(&ret).unwrap()),
             Err(ret) => Err(match ret {
                 ClientError::BadRequest(s) => match serde_json::from_str(&s) {
                     Ok(ret) => ret,
-                    Err(_) => TokenCreationError {
-                        error: true,
-                        apiversion: 0,
-                        errorCode: "".to_string(),
-                        message: "".to_string()
-                    }
+                    Err(_) => ApiError::new(true, 0, "", "")
                 },
-                _ => TokenCreationError {
-                    error: true,
-                    apiversion: 0,
-                    errorCode: "".to_string(),
-                    message: "".to_string()
-                }
+                _ => ApiError::new(true, 0, "", "")
             })
         }
     }
