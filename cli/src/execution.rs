@@ -1,8 +1,9 @@
+use std::borrow::Cow;
 use api::Job;
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct DateField {
-    pub date: String
+pub struct DateField<'a> {
+    pub date: Cow<'a, str>
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -11,17 +12,17 @@ pub struct ExecutionPagination {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Execution {
+pub struct Execution<'a> {
     pub id: i32,
-    pub href: String,
-    pub permalink: String,
-    pub status: String,
-    pub project: String,
-    pub user: String,
+    pub href: Cow<'a, str>,
+    pub permalink: Cow<'a, str>,
+    pub status: Cow<'a, str>,
+    pub project: Cow<'a, str>,
+    pub user: Cow<'a, str>,
     #[serde(rename = "date-started")]
     pub date: DateField,
     pub job: Job,
-    pub description: String
+    pub description: Cow<'a, str>
 }
 
 // pub fn kill(client: &Client, url: &str, token: &str, execution_id: &str) {

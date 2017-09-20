@@ -1,5 +1,5 @@
 use client::Client;
-// use std::borrow::Cow;
+use std::borrow::Cow;
 use serde_json;
 
 // use prettytable::format;
@@ -9,10 +9,10 @@ use serde_json;
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Project {
-    pub url: String,
-    pub description: Option<String>,
-    pub name: String
+pub struct Project<'a> {
+    pub url: Cow<'a, str>,
+    pub description: Option<Cow<'a, str>>,
+    pub name: Cow<'a, str>
 }
 
 // fn compile_filters(filters: Vec<&str>) -> Vec<String> {

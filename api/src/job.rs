@@ -1,23 +1,24 @@
+use std::borrow::Cow;
+use std::borrow::Borrow;
 use client::Client;
 use serde_json;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Job {
-    pub id: String,
-    pub name: String,
-    pub group: Option<String>,
-    pub project: String,
-    pub href: String,
-    pub permalink: String,
-    pub description: String,
+pub struct Job<'a> {
+    pub id: Cow<'a, str>,
+    pub name: Cow<'a, str>,
+    pub group: Option<Cow<'a, str>>,
+    pub project: Cow<'a, str>,
+    pub href: Cow<'a, str>,
+    pub permalink: Cow<'a, str>,
+    pub description: Cow<'a, str>,
     pub schedule_enabled: Option<bool>,
     pub enabled: Option<bool>,
     pub scheduled: Option<bool>,
 }
 
-impl Job {
-
+impl<'a> Job<'a> {
     /// Create a new Job with an empty state
     /// Every string are empty, every boolean are false and all optional are None
     ///
@@ -39,14 +40,18 @@ impl Job {
     /// assert_eq!(j.scheduled, None);
     /// ```
     pub fn new_empty() -> Self {
+       Self::new("", "", "", "", "", "")
+    }
+
+    fn new<U>(id: U, name: U, project: U, href: U, permalink: U, description: U) -> Self where U: Into<Cow<'a, str>> {
         Self {
-            id: String::new(),
-            name: String::new(),
+            id: id.into(),
+            name: name.into(),
             group: None,
-            project: String::new(),
-            href: String::new(),
-            permalink: String::new(),
-            description: String::new(),
+            project: project.into(),
+            href: href.into(),
+            permalink: permalink.into(),
+            description: description.into(),
             schedule_enabled: None,
             enabled: None,
             scheduled: None,
@@ -58,10 +63,11 @@ impl Job {
     /// # Example
     /// ```
     /// use rundeck_api::job::Job;
+    /// use std::borrow::Cow;
     ///
     /// let mut j = Job::new_empty();
-    /// j.name = "job_name".to_string();
-    /// j.group = Some("group/name".to_string());
+    /// j.name = Cow::from("job_name");
+    /// j.group = Some(Cow::from("group/name"));
     ///
     /// assert_eq!(j.name_with_group(), "group/name/job_name");
     ///
@@ -69,7 +75,7 @@ impl Job {
     pub fn name_with_group(&self) -> String {
         match self.group {
             Some(ref g) => format!("{}/{}", g, self.name),
-            None => self.name.clone()
+            None => self.name.to_string()
         }
     }
 }
@@ -100,11 +106,11 @@ pub fn compile_filters(filters: Vec<&str>) -> Vec<String> {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct RunBody {
-    pub filter: Option<String>,
-    pub options: HashMap<String, String>,
+pub struct RunBody<'a> {
+    pub filter: Option<Cow<'a, str>>,
+    pub options: HashMap<Cow<'a, str>, Cow<'a, str>>,
     #[serde(rename="argString")]
-    pub arg_string: Option<String>
+    pub arg_string: Option<Cow<'a, str>>
 }
 
 #[derive(Clone)]
@@ -143,6 +149,7 @@ impl<'a> JobService<'a> {
     }
 
     pub fn run(&self, job: &str, body: &RunBody) {
+        println!("start run");
         let mut body = body.clone();
         if self.client.api_version <= 18 {
             let mut arg_string: Vec<String> = Vec::new();
@@ -150,10 +157,13 @@ impl<'a> JobService<'a> {
                 arg_string.push(format!("-{} {}",name, value));
             }
 
-            body.arg_string = Some(arg_string.join(" "));
+            body.arg_string = Some(arg_string.join(" ").into());
         }
 
         let body = serde_json::to_string(&body).unwrap();
-        let _ = self.client.perform_post(&format!("job/{}/run", job), &body);
+        println!("{:?}", body);
+        let r = self.client.perform_post(&format!("job/{}/run", job), &body);
+
+        println!("{:?}", r);
     }
 }

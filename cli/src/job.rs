@@ -12,7 +12,7 @@ pub fn list_jobs(service: &JobService, project: &str, quiet: bool, completion: b
     if quiet {
         for j in jobs {
             if completion {
-                println!("{}/{}({})", j.group.unwrap_or(String::new()), j.name, j.id);
+                println!("{}/{}({})", j.group.unwrap_or("".into()), j.name, j.id);
             } else {
                 println!("{}", j.id);
             }
@@ -35,14 +35,15 @@ pub fn list_jobs(service: &JobService, project: &str, quiet: bool, completion: b
 
 pub fn run(service: &JobService, job_id: &str, node: &str, options: Vec<&str>) {
     // Options to RunBody
-    let mut body = RunBody {arg_string: None, filter: Some(node.to_string()), options: HashMap::new()};
+    println!("start cli run");
+    let mut body = RunBody {arg_string: None, filter: Some(node.into()), options: HashMap::new()};
     for i in options {
         let split = i.split("=").collect::<Vec<_>>();
 
         let name = split[0];
         let opt = split[1];
 
-        body.options.insert(name.to_string(), opt.to_string());
+        body.options.insert(name.into(), opt.into());
     }
 
     service.run(&job_id, &body);

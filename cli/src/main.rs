@@ -11,13 +11,12 @@ extern crate reqwest;
 #[macro_use] extern crate prettytable;
 extern crate serde;
 extern crate serde_json;
-#[macro_use] extern crate serde_derive;
 extern crate dialoguer;
 extern crate rundeck_api as api;
 
 use std::env;
 use clap::App;
-use reqwest::header::{Headers, ContentType, Accept};
+use reqwest::header::{Headers, Accept};
 
 mod job;
 mod project;
@@ -40,7 +39,7 @@ fn main() {
         Err(_) => panic!("")
     };
 
-    if let Err(e) = rundeck.check_connectivity() {
+    if let Err(_) = rundeck.check_connectivity() {
         println!("Rundeck is not accessible on HTTP/HTTPs protocol.");
         std::process::exit(1);
     }
@@ -103,7 +102,7 @@ fn main() {
                         ("project", Some(_)) => {}
                             // project::list_project_executions(&client, &url, &authtoken, matches.value_of("project").unwrap()),
 
-                        ("job", Some(matches)) =>{}
+                        ("job", Some(_)) =>{}
                             // job::list_job_executions(&job_service, matches.value_of("job_id").unwrap()),
 
                         _ =>
@@ -112,16 +111,15 @@ fn main() {
 
                 }
 
-                ("tokens", Some(tokens_matches)) => tokens::list_tokens(&token_service),
+                ("tokens", Some(_)) => tokens::list_tokens(&token_service),
 
                 _ =>
                     println!("{}", String::from_utf8(help_bytes).expect("Help message was invalid UTF8")),
             }
         },
         ("run", Some(matches)) => {
-            let mut job_id = String::new();
+            let job_id:String;
             if matches.value_of("job_id").is_some() {
-                println!("A job id");
                 job_id = matches.value_of("job_id").unwrap().to_string();
             } else {
                 let jobs: Vec<String> = job_service.list(matches.value_of("project").unwrap(), matches.values_of("filter")
@@ -129,7 +127,7 @@ fn main() {
                                                 .unwrap_or(Vec::new()))
                     .iter()
                     .cloned()
-                    .map(|x| format!("{}/{} ({})", x.group.unwrap_or(String::new()), x.name, x.id))
+                    .map(|x| format!("{}/{} ({})", x.group.unwrap_or("".into()), x.name, x.id))
                     .collect();
 
                 let job_str: Vec<&str> = jobs.iter()
@@ -144,7 +142,7 @@ fn main() {
                 job_id = job_str[selection].split(|c| c == '(' || c == ')').filter(|x| x.len() > 0).collect::<Vec<_>>().pop().unwrap().to_string();
             }
 
-            job::run(&job_service, &job_id, matches.value_of("node").unwrap(), matches.values_of("opt").map(|x|x.collect::<Vec<_>>()).unwrap());
+            job::run(&job_service, &job_id, matches.value_of("node").unwrap(), matches.values_of("opt").map(|x|x.collect::<Vec<_>>()).unwrap_or(Vec::new()));
         },
 
         ("kill", Some(_)) => {}
