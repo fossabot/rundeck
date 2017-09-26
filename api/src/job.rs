@@ -3,6 +3,7 @@ use std::borrow::Borrow;
 use client::Client;
 use serde_json;
 use std::collections::HashMap;
+use error::ClientError;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Job<'a> {
@@ -133,7 +134,7 @@ impl<'a> JobService<'a> {
     ///     Err(_) => assert!(false)
     /// }
     /// ```
-    pub fn from_client(client: &'a Client) -> Result<Self, ()>
+    pub fn from_client(client: &'a Client) -> Result<Self, ClientError>
     {
         Ok(Self {
             client

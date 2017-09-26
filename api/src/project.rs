@@ -1,6 +1,7 @@
 use client::Client;
 use std::borrow::Cow;
 use serde_json;
+use error::ClientError;
 
 // use prettytable::format;
 // use prettytable::row::Row;
@@ -38,7 +39,7 @@ pub struct ProjectService<'a> {
 }
 
 impl<'a> ProjectService<'a> {
-    pub fn from_client(client: &'a Client) -> Result<Self, ()> 
+    pub fn from_client(client: &'a Client) -> Result<Self, ClientError>
     {
         Ok(Self {
             client

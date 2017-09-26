@@ -13,11 +13,23 @@ extern crate serde;
 extern crate serde_json;
 extern crate dialoguer;
 extern crate rundeck_api as api;
+#[macro_use] extern crate error_chain;
 
 use std::env;
+use std::panic;
 use clap::App;
 use reqwest::header::{Headers, Accept};
+use api::error::ClientError;
 
+mod errors {
+    error_chain!{
+        errors {
+            ClientError
+        }
+    }
+}
+
+use errors::*;
 mod job;
 mod project;
 mod tokens;
@@ -29,24 +41,26 @@ pub fn construct_headers() -> Headers {
     headers
 }
 
-
 fn main() {
-    let url = env::var("RUNDECK_URL").expect("RUNDECK_URL NOT DEFINED");
-    let authtoken = env::var("RUNDECK_TOKEN").expect("RUNDECK_TOKEN NOT DEFINED");
-
-    let rundeck = match api::client::Client::new(url, authtoken) {
-        Ok(r) => r,
-        Err(_) => panic!("")
-    };
-
-    if let Err(_) = rundeck.check_connectivity() {
-        println!("Rundeck is not accessible on HTTP/HTTPs protocol.");
-        std::process::exit(1);
+    if let Err(ref e) = start() {
+        println!("An error occured: {}", e);
+        for e in e.iter().skip(1) {
+            println!("caused by: {}", e);
+        }
     }
+}
 
-    let job_service = api::JobService::from_client(&rundeck).expect("Cannot create a valid JobService");
-    let project_service = api::ProjectService::from_client(&rundeck).expect("Cannot create a valid ProjectService");
-    let token_service = api::TokenService::from_client(&rundeck).expect("Cannot create a valid TokenService");
+fn start() -> Result<()> {
+    let url = env::var("RUNDECK_URL").chain_err(|| "RUNDECK_URL NOT DEFINED")?;
+    let authtoken = env::var("RUNDECK_TOKEN").chain_err(|| "RUNDECK_TOKEN NOT DEFINED")?;
+
+    let rundeck = api::client::Client::new(url, authtoken).chain_err(|| "Fail to create an api client")?;
+
+    rundeck.check_connectivity().chain_err(|| "Rundeck API isn't reachable")?;
+
+    let job_service = api::JobService::from_client(&rundeck).chain_err(||"Cannot create a valid JobService")?;
+    let project_service = api::ProjectService::from_client(&rundeck).chain_err(||"Cannot create a valid ProjectService")?;
+    let token_service = api::TokenService::from_client(&rundeck).chain_err(||"Cannot create a valid TokenService")?;
 
     let mut help_bytes: Vec<u8> = Vec::new();
     let yaml = load_yaml!("cli.yml");
@@ -162,4 +176,6 @@ fn main() {
         _ =>
             unreachable!(),
     }
+
+    Ok(())
 }

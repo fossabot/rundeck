@@ -16,6 +16,7 @@ serde_json = "^1"
 serde_derive = "^1"
 url = "^1"
 hyper = "*"
+error-chain = "*"
 
 [dev-dependencies]
 mockito = "0.8.2"
