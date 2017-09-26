@@ -1,4 +1,6 @@
 use std::borrow::Cow;
+use std::fmt;
+use std::error::Error;
 
 #[derive(Debug, PartialEq)]
 pub enum ClientError {
@@ -7,7 +9,7 @@ pub enum ClientError {
     MalformedUrl,
     UncompatibleVersion,
     TimedOut,
-    BadRequest(String)
+    BadRequest(String),
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
@@ -32,5 +34,22 @@ impl<'a> ApiError<'a> {
 
     pub fn empty() -> Self {
         Self::new(true, 0, "", "")
+    }
+}
+
+impl fmt::Display for ClientError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            ClientError::InternalClientCreation => write!(f, "Can't create an internal http client"),
+            ClientError::MalformedUrl => write!(f, "RUNDECK_URL is malformed"),
+            ClientError::UncompatibleVersion => write!(f, "RUNDECK_URL doesn't contain a valid API_VERSION"),
+            _ => write!(f, "SuperError is here!")
+        }
+    }
+}
+
+impl Error for ClientError {
+    fn description(&self) -> &str {
+        ""
     }
 }
