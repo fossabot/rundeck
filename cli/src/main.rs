@@ -1,11 +1,13 @@
 //!
 //! rundeck list projects
 //! rundeck list jobs <project>
-//! rundeck list executions job <job_id>
+//! rundeck list executions job <`job_id`>
 //! rundeck list executions project <project>
 //! rundeck run job <job>
-//! rundeck kill job <job_id>
+//! rundeck kill job <`job_id`>
 //!
+#![recursion_limit = "1024"]
+
 #[macro_use]extern crate clap;
 extern crate reqwest;
 #[macro_use] extern crate prettytable;
@@ -16,24 +18,21 @@ extern crate rundeck_api as api;
 #[macro_use] extern crate error_chain;
 
 use std::env;
-use std::panic;
 use clap::App;
 use reqwest::header::{Headers, Accept};
-use api::error::ClientError;
 
-mod errors {
-    error_chain!{
-        errors {
-            ClientError
-        }
+error_chain!{
+    foreign_links {
+        Api(api::error::ClientError);
     }
 }
 
-use errors::*;
 mod job;
 mod project;
 mod tokens;
-// mod execution;
+mod commands;
+
+use commands::Command;
 
 pub fn construct_headers() -> Headers {
     let mut headers = Headers::new();
@@ -52,11 +51,9 @@ fn main() {
 
 fn start() -> Result<()> {
     let url = env::var("RUNDECK_URL").chain_err(|| "RUNDECK_URL NOT DEFINED")?;
-    let authtoken = env::var("RUNDECK_TOKEN").chain_err(|| "RUNDECK_TOKEN NOT DEFINED")?;
+    let authtoken = env::var("RUNDECK_TOKEN").unwrap_or_else(|_|"".to_string());
 
     let rundeck = api::client::Client::new(url, authtoken).chain_err(|| "Fail to create an api client")?;
-
-    rundeck.check_connectivity().chain_err(|| "Rundeck API isn't reachable")?;
 
     let job_service = api::JobService::from_client(&rundeck).chain_err(||"Cannot create a valid JobService")?;
     let project_service = api::ProjectService::from_client(&rundeck).chain_err(||"Cannot create a valid ProjectService")?;
@@ -71,7 +68,10 @@ fn start() -> Result<()> {
     let matches = app.get_matches();
 
     match matches.subcommand() {
-        ("list", Some(list_matches)) =>{
+        ("auth", Some(auth_matches)) => {
+            let _ = (commands::AuthCommand::from_matches(auth_matches, &rundeck)).proceed();
+        },
+        ("list", Some(list_matches)) => {
             match list_matches.subcommand() {
 
                 ("projects", Some(matches)) =>
@@ -107,13 +107,13 @@ fn start() -> Result<()> {
                                        matches.is_present("completion"),
                                        matches.values_of("filter")
                                                 .map(|x| x.collect::<Vec<_>>())
-                                                .unwrap_or(Vec::new()))
+                                                .unwrap_or_default())
                 },
 
                 ("executions", Some(executions_matches)) => {
                     match executions_matches.subcommand() {
 
-                        ("project", Some(_)) => {}
+                        ("project", Some(_)) |
                             // project::list_project_executions(&client, &url, &authtoken, matches.value_of("project").unwrap()),
 
                         ("job", Some(_)) =>{}
@@ -132,16 +132,15 @@ fn start() -> Result<()> {
             }
         },
         ("run", Some(matches)) => {
-            let job_id:String;
-            if matches.value_of("job_id").is_some() {
-                job_id = matches.value_of("job_id").unwrap().to_string();
+            let job_id = if matches.value_of("job_id").is_some() {
+                matches.value_of("job_id").unwrap().to_string()
             } else {
                 let jobs: Vec<String> = job_service.list(matches.value_of("project").unwrap(), matches.values_of("filter")
                                                 .map(|x| x.collect::<Vec<_>>())
-                                                .unwrap_or(Vec::new()))
+                                                .unwrap_or_default())
                     .iter()
                     .cloned()
-                    .map(|x| format!("{}/{} ({})", x.group.unwrap_or("".into()), x.name, x.id))
+                    .map(|x| format!("{}/{} ({})", x.group.unwrap_or_else(||"".into()), x.name, x.id))
                     .collect();
 
                 let job_str: Vec<&str> = jobs.iter()
@@ -153,10 +152,10 @@ fn start() -> Result<()> {
                     .items(&job_str[..])
                     .interact().unwrap();
 
-                job_id = job_str[selection].split(|c| c == '(' || c == ')').filter(|x| x.len() > 0).collect::<Vec<_>>().pop().unwrap().to_string();
-            }
+                job_str[selection].split(|c| c == '(' || c == ')').filter(|x| !x.is_empty()).collect::<Vec<_>>().pop().unwrap().to_string()
+            };
 
-            job::run(&job_service, &job_id, matches.value_of("node").unwrap(), matches.values_of("opt").map(|x|x.collect::<Vec<_>>()).unwrap_or(Vec::new()));
+            job::run(&job_service, &job_id, matches.value_of("node").unwrap(), matches.values_of("opt").map(|x|x.collect::<Vec<_>>()).unwrap_or_default());
         },
 
         ("kill", Some(_)) => {}
@@ -164,7 +163,7 @@ fn start() -> Result<()> {
 
         ("new", Some(matches)) => {
             match matches.subcommand() {
-                ("token", Some(matches)) => tokens::new(&token_service, matches.value_of("user").unwrap(), matches.value_of("duration"), matches.values_of("role").map(|x| x.collect::<Vec<_>>()).unwrap_or(Vec::new())
+                ("token", Some(matches)) => tokens::new(&token_service, matches.value_of("user").unwrap(), matches.value_of("duration"), matches.values_of("role").map(|x| x.collect::<Vec<_>>()).unwrap_or_default()
                                                         ),
                 _ => println!("{}", String::from_utf8(help_bytes).expect("Help message was invalid UTF8")),
             }
