@@ -6,11 +6,6 @@ main() {
     local src=$(pwd) \
           stage=
 
-    case $TARGET in
-        x86_64-unknown-linux-gnu)
-            cargo coveralls --all --verbose
-            ;;
-    esac
     case $TRAVIS_OS_NAME in
         linux)
             stage=$(mktemp -d)

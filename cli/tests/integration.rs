@@ -1,5 +1,4 @@
-extern crate assert_cli;
-use std::process::Command;
+// extern crate assert_cli;
 
 static HELP_ALL: &'static str = "Rundeck CLI 1.0
 Simon PAITRAULT <simon.paitrault@gmail.com>
@@ -20,18 +19,26 @@ SUBCOMMANDS:
 
 #[cfg(test)]
 mod integration {
-    use assert_cli;
+    extern crate mockito;
+    // use assert_cli;
     use HELP_ALL;
+    use std::process::Command;
 
     #[test]
     fn calling_rundeck_without_args() {
-        assert_cli::Assert::main_binary()
-            .stdout().is(HELP_ALL)
-            .unwrap();
-        // let output = Command::new("../target/debug/rundeck")
-        //     .output()
-        //     .expect("failed to execute process");
+        let _m = mockito::mock("GET", "/20/system/info")
+            .match_header("Accept", mockito::Matcher::Any)
+            .match_header("X-Rundeck-Auth-Token", mockito::Matcher::Any)
+            .with_status(200)
+            .create();
 
-        // assert_eq!(String::from_utf8_lossy(&output.stdout), HELP_ALL);
+        let output = Command::new("cargo")
+            .args(&["run"])
+            .env("RUNDECK_URL", format!("{}/20/", mockito::SERVER_URL))
+            .output()
+            .expect("failed to execute process");
+
+        assert_eq!(String::from_utf8_lossy(&output.stdout), HELP_ALL);
+        mockito::reset();
     }
 }

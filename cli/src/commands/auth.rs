@@ -19,8 +19,7 @@ impl<'a> Command for AuthCommand<'a> {
         if let Ok(t) = env::var("RUNDECK_TOKEN") {
             // If Token
             //  -> Check if valid
-            if let Err(e) = self.client.check_connectivity() {
-                println!("{:?}", e);
+            if let Err(_) = self.client.check_connectivity() {
                 //  -> If Not
                 //      -> Log with user:password
                 self.println("It seems that you already have a RUNDECK_TOKEN");

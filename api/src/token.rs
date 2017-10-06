@@ -21,7 +21,7 @@ pub struct Token<'a> {
 /// # Example
 /// ```
 /// use rundeck_api::job::compile_filters;
-/// assert_eq!(compile_filters(vec!()), Vec::new() as Vec<String>);
+/// assert_eq!(compile_filters(&vec![]), Vec::new() as Vec<String>);
 /// ```
 pub fn compile_filters<'a, I>(filters: &I) -> Vec<String>
     where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>

@@ -10,7 +10,7 @@ use error::ClientError;
 
 header! { (XRundeckAuthToken, "X-Rundeck-Auth-Token") => [String] }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Client<'a> {
     inner: reqwest::Client,
     pub headers: Headers,
@@ -59,7 +59,7 @@ impl<'a> Client<'a> {
         let trailing_slash = url_saved.ends_with('/');
 
         // parse the api version
-        let api_version: i32 = match url_saved.split('/').filter(|x| x.is_empty() ).last() {
+        let api_version: i32 = match url_saved.split('/').filter(|x| !x.is_empty() ).last() {
             Some(v) => match v.parse() {
                 Ok(api) => api,
                 Err(_) => return Err(ClientError::UncompatibleVersion),
@@ -108,13 +108,9 @@ impl<'a> Client<'a> {
             Ok(r) => if r.status().is_success() || r.status().is_redirection() {
                 Ok(())
             } else {
-                println!("{:?}", r);
                 Err(ClientError::Connectivity)
             },
-            Err(e) => {
-                println!("{:?}", e);
-                Err(ClientError::Connectivity)
-            }
+            Err(_) => Err(ClientError::Connectivity)
         }
     }
 
@@ -162,8 +158,7 @@ impl<'a> Client<'a> {
                     Err(ClientError::InternalClientCreation)
                 }
             },
-            Err(e) => {
-                println!("{:#?}", e);
+            Err(_) => {
                 Err(ClientError::InternalClientCreation)
             }
         }
@@ -331,7 +326,7 @@ mod tests {
         let result = match Client::new(format!("{}/12", mockito::SERVER_URL), "token") {
             Ok(c) => match c.check_connectivity() {
                 Ok(_) => false,
-                Err(e) => true
+                Err(_) => true
             },
             _ => false
         };
