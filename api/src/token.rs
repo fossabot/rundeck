@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::ops::Deref;
 use client::Client;
 use serde_json;
 use error::{ClientError, ApiError};
@@ -7,10 +8,11 @@ use error::{ClientError, ApiError};
 pub struct Token<'a> {
     pub user: Cow<'a, str>,
     pub id: Cow<'a, str>,
-    creator: Cow<'a, str>,
+    pub creator: Cow<'a, str>,
     expiration: Cow<'a, str>,
     roles: Vec<Cow<'a, str>>,
-    expired: bool
+    pub expired: bool,
+    pub token: Option<Cow<'a, str>>
 }
 
 /// Compile filters
@@ -19,15 +21,14 @@ pub struct Token<'a> {
 /// # Example
 /// ```
 /// use rundeck_api::job::compile_filters;
-/// assert_eq!(compile_filters(vec!()), Vec::new() as Vec<String>);
+/// assert_eq!(compile_filters(&vec![]), Vec::new() as Vec<String>);
 /// ```
-pub fn compile_filters(filters: Vec<&str>) -> Vec<String> {
+pub fn compile_filters<'a, I>(filters: &I) -> Vec<String>
+    where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>
+{
     filters
         .iter()
-        .map(|x|{
-            let mut z = x.to_string();
-            z
-        })
+        .map(|x| x.to_string())
         .collect::<Vec<String>>()
 }
 
@@ -65,15 +66,27 @@ impl<'a> TokenService<'a> {
         })
     }
 
-    pub fn list(&self, filters: Vec<&str>) -> Vec<Token> {
-        let mut filters = compile_filters(filters);
+    pub fn list<I>(&self, filters: I) -> Vec<Token>
+        where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>
+    {
+        let mut filters = compile_filters(&filters);
 
         let ret = self.client.perform_get("tokens", &mut filters).unwrap();
 
         serde_json::from_str(&ret).unwrap()
     }
 
-    pub fn new(&self, body: &TokenBody) -> Result<Token, ApiError> {
+    pub fn get(&self, t: &Token) -> Result<Token, ApiError> {
+        let mut filters: Vec<String> = Vec::new();
+
+        let ret = self.client.perform_get(&format!("token/{}", t.id), &mut filters).unwrap();
+
+        let t: Token = serde_json::from_str(&ret).unwrap();
+
+        Ok(t)
+    }
+
+    pub fn create(&self, body: &TokenBody) -> Result<Token, ApiError> {
         match self.client.perform_post("tokens", &serde_json::to_string(&body).unwrap()) {
             Ok(ret) => Ok(serde_json::from_str(&ret).unwrap()),
             Err(ret) => Err(match ret {

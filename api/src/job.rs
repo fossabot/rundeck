@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::borrow::Borrow;
+use std::ops::Deref;
 use client::Client;
 use serde_json;
 use std::collections::HashMap;
@@ -87,18 +87,20 @@ impl<'a> Job<'a> {
 /// # Example
 /// ```
 /// use rundeck_api::job::compile_filters;
-/// assert_eq!(compile_filters(vec!()), Vec::new() as Vec<String>);
+/// assert_eq!(compile_filters(&vec![]), Vec::new() as Vec<String>);
 /// ```
-pub fn compile_filters(filters: Vec<&str>) -> Vec<String> {
+pub fn compile_filters<'a, I>(filters: &I) -> Vec<String> 
+    where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>
+{
     filters
         .iter()
         .map(|x|{
             let mut z = x.to_string();
 
             if z.starts_with("name") {
-                z = format!("jobFilter={}", z.split("=").collect::<Vec<&str>>()[1]);
+                z = format!("jobFilter={}", z.split('=').collect::<Vec<&str>>()[1]);
             } else if z.starts_with("group") {
-                z = format!("groupPath={}", z.split("=").collect::<Vec<&str>>()[1]);
+                z = format!("groupPath={}", z.split('=').collect::<Vec<&str>>()[1]);
             }
 
             z
@@ -141,8 +143,10 @@ impl<'a> JobService<'a> {
         })
     }
 
-    pub fn list(&self, project: &str, filters: Vec<&str>) -> Vec<Job> {
-        let mut filters = compile_filters(filters);
+    pub fn list<I>(&self, project: &str, filters: I) -> Vec<Job> 
+        where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>
+    {
+        let mut filters = compile_filters(&filters);
 
         let ret = self.client.perform_get(&format!("project/{}/jobs",project), &mut filters).unwrap();
 

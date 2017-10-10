@@ -28,7 +28,7 @@ pub fn new(service: &TokenService, user: &str, duration: Option<&str>, roles:Vec
         duration: duration.unwrap_or("").into()
     };
 
-    let token = service.new(&body);
+    let token = service.create(&body);
 
     match token {
         Ok(t) => println!("{}", t.id),

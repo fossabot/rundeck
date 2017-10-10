@@ -19,3 +19,7 @@ prettytable-rs = "^0.6"
 dialoguer = "0.1.0"
 rundeck-api = "0.1.0"
 error-chain = "*"
+
+[dev-dependencies]
+mockito = "0.8.2"
+assert_cli = "*"

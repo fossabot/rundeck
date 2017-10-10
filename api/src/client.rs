@@ -1,17 +1,19 @@
 use reqwest;
-use reqwest::header::{Headers, ContentType, Accept};
+use reqwest::header::{Headers, ContentType, Cookie, Accept};
+use reqwest::RedirectPolicy;
 use std::borrow::{Cow, Borrow};
 use std::io::Read;
 use url::Url;
+use std::collections::HashMap;
 
 use error::ClientError;
 
 header! { (XRundeckAuthToken, "X-Rundeck-Auth-Token") => [String] }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Client<'a> {
     inner: reqwest::Client,
-    headers: Headers,
+    pub headers: Headers,
     url: Cow<'a, str>,
     trailing_slash: bool,
     pub api_version: i32
@@ -31,7 +33,9 @@ impl<'a> Client<'a> {
         where U: Into<Cow<'a, str>>,
               T: ToString
     {
-        let inner = match reqwest::Client::new() {
+        let inner = match reqwest::Client::builder()
+            .redirect(RedirectPolicy::none())
+            .build() {
             Ok(client) => client,
             Err(_) => return Err(ClientError::InternalClientCreation)
         };
@@ -52,10 +56,10 @@ impl<'a> Client<'a> {
             }
         }
 
-        let trailing_slash = url_saved.ends_with("/");
+        let trailing_slash = url_saved.ends_with('/');
 
         // parse the api version
-        let api_version: i32 = match url_saved.split("/").filter(|x| x.len() > 0 ).last() {
+        let api_version: i32 = match url_saved.split('/').filter(|x| !x.is_empty() ).last() {
             Some(v) => match v.parse() {
                 Ok(api) => api,
                 Err(_) => return Err(ClientError::UncompatibleVersion),
@@ -70,6 +74,10 @@ impl<'a> Client<'a> {
             trailing_slash,
             api_version
         })
+    }
+
+    pub fn erase_token(&mut self) {
+        self.headers.remove::<XRundeckAuthToken>();
     }
 
     /// Check the connectivity to the API (doesn't test the token)
@@ -92,8 +100,7 @@ impl<'a> Client<'a> {
     /// ```
     pub fn check_connectivity(&self) -> Result<(), ClientError> {
         let mut req = self.inner
-            .request(reqwest::Method::Get, self.format_url("system/info", "")?)
-            .expect("Unable to build the check http request");
+            .request(reqwest::Method::Get, self.format_url("system/info", "")?);
 
         req.headers(self.headers.clone());
 
@@ -107,6 +114,56 @@ impl<'a> Client<'a> {
         }
     }
 
+    pub fn auth(&mut self, username: String, password: String) -> Result<(), ClientError> {
+        let mut params = HashMap::new();
+        params.insert("j_username", username);
+        params.insert("j_password", password);
+
+        let mut headers = self.headers.clone();
+        headers.remove::<ContentType>();
+        headers.remove::<Accept>();
+        headers.set(ContentType::form_url_encoded());
+
+        let mut req = self.inner
+            .request(reqwest::Method::Post, self.format_url("j_security_check", "")?);
+
+        let req = req.form(&params)
+            .headers(headers);
+
+        match req.send() {
+            Ok(mut r) => {
+
+                let mut content = String::new();
+                let _ = r.read_to_string(&mut content);
+
+                if r.status().is_redirection() {
+                    match r.headers().get::<reqwest::header::SetCookie>().unwrap().0.iter().filter(|x| x.contains("JSESSIONID")).collect::<Vec<&String>>().first() {
+                        Some(v) => {
+                            let split_cookie: Vec<_> = v.split('=').collect();
+                            let mut cookie = Cookie::new();
+                            cookie.append("jsessionid", split_cookie[1].to_string());
+                            self.headers.set(cookie);
+                            self.headers.remove::<ContentType>();
+                            self.headers.remove::<Accept>();
+                            self.headers.set(ContentType::form_url_encoded());
+
+                            let _ = self.inner
+                                .request(reqwest::Method::Get, r.url().as_str())
+                                .send();
+                            Ok(())
+                        },
+                        None => Err(ClientError::InternalClientCreation)
+                    }
+                } else {
+                    Err(ClientError::InternalClientCreation)
+                }
+            },
+            Err(_) => {
+                Err(ClientError::InternalClientCreation)
+            }
+        }
+    }
+
     #[inline]
     fn format_url(&self, url: &str, query: &str) -> Result<Url, ClientError> {
         match Url::parse(&format!(
@@ -116,11 +173,11 @@ impl<'a> Client<'a> {
                 if self.trailing_slash { "" } else { "/" },
                 url,
                 // Add ? if query isn't empty
-                if query.len() > 0 { "?" } else { "" },
+                if !query.is_empty() { "?" } else { "" },
                 query
             )) {
             Ok(u) => Ok(u),
-            Err(_) => return Err(ClientError::MalformedUrl)
+            Err(_) => Err(ClientError::MalformedUrl)
         }
     }
 
@@ -135,7 +192,7 @@ impl<'a> Client<'a> {
 
         let url = self.format_url(url, &query)?;
 
-        let mut res = self.inner.get(url).unwrap()
+        let mut res = self.inner.get(url)
             .headers(self.headers.clone())
             .send()
             .unwrap();
@@ -158,7 +215,7 @@ impl<'a> Client<'a> {
         let mut headers = self.headers.clone();
         headers.set(ContentType::json());
 
-        let mut res = self.inner.post(url).unwrap()
+        let mut res = self.inner.post(url)
             .headers(headers)
             .body(body.to_string())
             .send()

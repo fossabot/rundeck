@@ -63,6 +63,9 @@ script:
 
 after_script: set +e
 
+after_success:
+  - sh ci/coverall.sh
+
 before_deploy:
   - sh ci/before_deploy.sh
 
