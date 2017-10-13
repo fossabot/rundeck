@@ -2,64 +2,60 @@ use ResultExt;
 use dialoguer;
 use std::env;
 use super::*;
-use super::Command;
-use clap::ArgMatches;
-use api::client::Client;
+use super::Processable;
 use api::TokenService;
 use api::Token;
 
-pub struct AuthCommand<'a> {
-    matches: &'a ArgMatches<'a>,
-    client: &'a Client<'a>,
-}
+pub struct AuthCommand {}
 
-impl<'a> Command for AuthCommand<'a> {
-    fn proceed(&mut self) -> Result<()> {
+impl Processable for AuthCommand {
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn proceed<'a>(&mut self, matches: &ArgMatches, client: &Client<'a>) -> Result<()> {
         // Check if Token
         if let Ok(t) = env::var("RUNDECK_TOKEN") {
             // If Token
             //  -> Check if valid
-            if self.client.check_connectivity().is_err() {
+            if client.check_connectivity().is_err() {
                 //  -> If Not
                 //      -> Log with user:password
-                self.println("It seems that you already have a RUNDECK_TOKEN");
-                self.println("Checking if not expired...");
-                self.println("Your RUNDECK_TOKEN is expired or invalid");
-                self.println("We will fetch or create a new one.");
-                let (username, password) = self.ask_username_password()?;
+                println!("It seems that you already have a RUNDECK_TOKEN");
+                println!("Checking if not expired...");
+                println!("Your RUNDECK_TOKEN is expired or invalid");
+                println!("We will fetch or create a new one.");
+                let (username, password) = self.ask_username_password(matches)?;
 
-                self.display_token(username, password);
+                self.display_token(client, username, password);
             } else {
-                self.println("Your token is valid");
-                self.print("\n     export RUNDECK_TOKEN=");
+                println!("Your token is valid");
+                print!("\n     export RUNDECK_TOKEN=");
                 print!("{}", t);
-                self.println("");
+                println!("");
             }
         } else {
-            self.print("Your RUNDECK_TOKEN is missing");
-            self.print("We will fetch or create a new one.");
-            let (username, password) = self.ask_username_password()?;
+            println!("failllll");
+            print!("Your RUNDECK_TOKEN is missing");
+            print!("We will fetch or create a new one.");
+            let (username, password) = self.ask_username_password(matches)?;
 
-            self.display_token(username, password);
+            self.display_token(client, username, password);
         }
 
         Ok(())
     }
-
-    fn is_quiet(&self) -> bool {
-        self.matches.is_present("quiet")
-    }
 }
 
-impl<'a> AuthCommand<'a> {
-    fn display_token(&self, username: String, password: String) {
-        match self.fetch_or_create_token(username, password) {
+impl AuthCommand {
+    fn display_token(&self, client: &Client, username: String, password: String) {
+        match self.fetch_or_create_token(client, username, password) {
             Ok(t) => {
-                self.println(format!("Here's your token: {}", t));
-                self.println("Use this token with:");
-                self.print("\n     export RUNDECK_TOKEN=");
+                println!("Here's your token: {}", t);
+                println!("Use this token with:");
+                print!("\n     export RUNDECK_TOKEN=");
                 print!("{}", t);
-                self.println("");
+                println!("");
             }
             Err(e) => {
                 println!("{:?}", e);
@@ -67,8 +63,13 @@ impl<'a> AuthCommand<'a> {
         }
     }
 
-    fn fetch_or_create_token(&self, username: String, password: String) -> Result<String> {
-        let mut rundeck = self.client.clone();
+    fn fetch_or_create_token(
+        &self,
+        client: &Client,
+        username: String,
+        password: String,
+    ) -> Result<String> {
+        let mut rundeck = client.clone();
         rundeck.erase_token();
         rundeck
             .auth(username.clone(), password)
@@ -82,7 +83,7 @@ impl<'a> AuthCommand<'a> {
         let x: Vec<&Token> = token_list
             .iter()
             .filter(|x| x.creator == username)
-            .filter(|x| !x.expired)
+            .filter(|x| x.expired)
             .collect();
 
         let v: Vec<_> = x.into_iter().map(|x| s.get(x).unwrap()).collect();
@@ -97,24 +98,20 @@ impl<'a> AuthCommand<'a> {
         }
     }
 
-    fn ask_username_password(&self) -> Result<(String, String)> {
+    fn ask_username_password(&self, matches: &ArgMatches) -> Result<(String, String)> {
         Ok((
-            match self.matches.value_of("username") {
+            match matches.value_of("username") {
                 Some(u) => u.to_string(),
                 None => dialoguer::Input::new("username")
                     .interact()
                     .chain_err(|| "You need to provide a username")?,
             },
-            match self.matches.value_of("password") {
+            match matches.value_of("password") {
                 Some(u) => u.to_string(),
                 None => dialoguer::PasswordInput::new("password")
                     .interact()
                     .chain_err(|| "You need to provide a password")?,
             },
         ))
-    }
-
-    pub fn from_matches(matches: &'a ArgMatches, client: &'a Client) -> Self {
-        Self { matches, client }
     }
 }

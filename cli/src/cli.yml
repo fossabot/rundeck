@@ -9,9 +9,6 @@ subcommands:
     - auth:
         about: Authenticate with username/password (You should use this to generate a token and then use the token)
         args:
-            - quiet:
-                short: q
-                help: Display only job id
             - username:
                 help: optional parameter to predefine a username
                 short: u
@@ -30,18 +27,11 @@ subcommands:
         subcommands:
             - projects:
                 about: list all projects
-                args:
-                    - quiet:
-                        short: q
-                        help: Display only name
             - jobs:
                 about: list project jobs
                 args:
                     - project:
                         help: Project name
-                    - quiet:
-                        short: q
-                        help: Display only job id
                     - filter:
                         short: f
                         long: filter
