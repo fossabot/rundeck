@@ -1,5 +1,3 @@
-// extern crate assert_cli;
-
 // static HELP_ALL: &'static str = "Rundeck CLI 1.0
 // Simon PAITRAULT <simon.paitrault@gmail.com>
 
@@ -10,7 +8,8 @@
 //     Rundeck CLI [SUBCOMMAND]
 
 // SUBCOMMANDS:
-//     auth    Authenticate with username/password (You should use this to generate a token and then use the token)
+//     auth    Authenticate with username/password (You should use this to generate a token \
+//     and then use the token)
 //     kill    Kill a job
 //     list    List projects, job, executions
 //     new     Create new token, job, ...
@@ -29,6 +28,7 @@ mod integration_auth {
     use TOKEN_OK;
 
     #[test]
+    #[ignore]
     fn calling_rundeck_auth_with_user_pass() {
         let _m = mockito::mock("GET", "/20/system/info")
             .match_header("Accept", mockito::Matcher::Any)
@@ -49,6 +49,7 @@ mod integration_auth {
     }
 
     #[test]
+    #[ignore]
     fn calling_rundeck_auth_with_user_pass_quiet() {
         let _m = mockito::mock("GET", "/20/system/info")
             .match_header("Accept", mockito::Matcher::Any)
