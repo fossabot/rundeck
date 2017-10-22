@@ -8,8 +8,12 @@ env:
 
 cache: cargo
 
+branches:
+  except:
+    - /^.*\.tmp$/
+
 only_master_and_tag: &only_master_and_tag
-  if: branch = master AND tag =~ ^v\d+\.\d+\.\d+.*$
+  if: branch IN (master, trying, staging) AND tag =~ ^v\d+\.\d+\.\d+.*$
 
 matrix:
   include:
