@@ -41,10 +41,13 @@ impl<'a> Job<'a> {
     /// assert_eq!(j.scheduled, None);
     /// ```
     pub fn new_empty() -> Self {
-       Self::new("", "", "", "", "", "")
+        Self::new("", "", "", "", "", "")
     }
 
-    fn new<U>(id: U, name: U, project: U, href: U, permalink: U, description: U) -> Self where U: Into<Cow<'a, str>> {
+    fn new<U>(id: U, name: U, project: U, href: U, permalink: U, description: U) -> Self
+    where
+        U: Into<Cow<'a, str>>,
+    {
         Self {
             id: id.into(),
             name: name.into(),
@@ -76,7 +79,7 @@ impl<'a> Job<'a> {
     pub fn name_with_group(&self) -> String {
         match self.group {
             Some(ref g) => format!("{}/{}", g, self.name),
-            None => self.name.to_string()
+            None => self.name.to_string(),
         }
     }
 }
@@ -89,12 +92,13 @@ impl<'a> Job<'a> {
 /// use rundeck_api::job::compile_filters;
 /// assert_eq!(compile_filters(&vec![]), Vec::new() as Vec<String>);
 /// ```
-pub fn compile_filters<'a, I>(filters: &I) -> Vec<String> 
-    where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>
+pub fn compile_filters<'a, I>(filters: &I) -> Vec<String>
+where
+    I: Deref<Target = [&'a str]> + IntoIterator<Item = &'a str>,
 {
     filters
         .iter()
-        .map(|x|{
+        .map(|x| {
             let mut z = x.to_string();
 
             if z.starts_with("name") {
@@ -112,13 +116,12 @@ pub fn compile_filters<'a, I>(filters: &I) -> Vec<String>
 pub struct RunBody<'a> {
     pub filter: Option<Cow<'a, str>>,
     pub options: HashMap<Cow<'a, str>, Cow<'a, str>>,
-    #[serde(rename="argString")]
-    pub arg_string: Option<Cow<'a, str>>
+    #[serde(rename = "argString")] pub arg_string: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone)]
 pub struct JobService<'a> {
-    client: &'a Client<'a>
+    client: &'a Client<'a>,
 }
 
 impl<'a> JobService<'a> {
@@ -136,19 +139,19 @@ impl<'a> JobService<'a> {
     ///     Err(_) => assert!(false)
     /// }
     /// ```
-    pub fn from_client(client: &'a Client) -> Result<Self, ClientError>
-    {
-        Ok(Self {
-            client
-        })
+    pub fn from_client(client: &'a Client) -> Result<Self, ClientError> {
+        Ok(Self { client })
     }
 
-    pub fn list<I>(&self, project: &str, filters: I) -> Vec<Job> 
-        where I: Deref<Target=[&'a str]> + IntoIterator<Item=&'a str>
+    pub fn list<I>(&self, project: &str, filters: I) -> Vec<Job>
+    where
+        I: Deref<Target = [&'a str]> + IntoIterator<Item = &'a str>,
     {
         let mut filters = compile_filters(&filters);
 
-        let ret = self.client.perform_get(&format!("project/{}/jobs",project), &mut filters).unwrap();
+        let ret = self.client
+            .perform_get(&format!("project/{}/jobs", project), &mut filters)
+            .unwrap();
 
         serde_json::from_str(&ret).unwrap()
     }
@@ -159,7 +162,7 @@ impl<'a> JobService<'a> {
         if self.client.api_version <= 18 {
             let mut arg_string: Vec<String> = Vec::new();
             for (name, value) in &body.options {
-                arg_string.push(format!("-{} {}",name, value));
+                arg_string.push(format!("-{} {}", name, value));
             }
 
             body.arg_string = Some(arg_string.join(" ").into());

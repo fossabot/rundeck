@@ -13,7 +13,7 @@ use error::ClientError;
 pub struct Project<'a> {
     pub url: Cow<'a, str>,
     pub description: Option<Cow<'a, str>>,
-    pub name: Cow<'a, str>
+    pub name: Cow<'a, str>,
 }
 
 // fn compile_filters(filters: Vec<&str>) -> Vec<String> {
@@ -35,15 +35,12 @@ pub struct Project<'a> {
 
 #[derive(Clone)]
 pub struct ProjectService<'a> {
-    client: &'a Client<'a>
+    client: &'a Client<'a>,
 }
 
 impl<'a> ProjectService<'a> {
-    pub fn from_client(client: &'a Client) -> Result<Self, ClientError>
-    {
-        Ok(Self {
-            client
-        })
+    pub fn from_client(client: &'a Client) -> Result<Self, ClientError> {
+        Ok(Self { client })
     }
 
     pub fn list(&self) -> Vec<Project> {
