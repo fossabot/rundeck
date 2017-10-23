@@ -12,9 +12,6 @@ branches:
   except:
     - /^.*\.tmp$/
 
-only_master_and_tag: &only_master_and_tag
-  if: branch IN (master, trying, staging) AND tag =~ ^v\d+\.\d+\.\d+.*$
-
 matrix:
   include:
 
@@ -36,12 +33,12 @@ matrix:
     - os: linux
       rust: stable
       env: TARGET=i686-unknown-linux-gnu
-      <<: *only_master_and_tag
+      if: branch IN (master, trying, staging) OR tag =~ ^v\d+\.\d+\.\d+.*$
 
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-musl STD=1 OPENSSL=0.5.5  RUN=1
-      <<: *only_master_and_tag
+      if: branch IN (master, trying, staging) OR tag =~ ^v\d+\.\d+\.\d+.*$
     # Fail, must investigate
     # - os: linux
     #   rust: stable
@@ -50,24 +47,24 @@ matrix:
     - os: osx
       rust: stable
       env: TARGET=x86_64-apple-darwin
-      <<: *only_master_and_tag
+      if: branch IN (master, trying, staging) OR tag =~ ^v\d+\.\d+\.\d+.*$
 
     - os: osx
       rust: stable
       env: TARGET=i686-apple-darwin
-      <<: *only_master_and_tag
+      if: branch IN (master, trying, staging) OR tag =~ ^v\d+\.\d+\.\d+.*$
 
     # Beta channel.
     - os: linux
       rust: beta
       env: TARGET=x86_64-unknown-linux-gnu
-      <<: *only_master_and_tag
+      if: branch IN (master, trying, staging) OR tag =~ ^v\d+\.\d+\.\d+.*$
 
     # Nightly channel.
     - os: linux
       rust: nightly
       env: TARGET=x86_64-unknown-linux-gnu
-      <<: *only_master_and_tag
+      if: branch IN (master, trying, staging) OR tag =~ ^v\d+\.\d+\.\d+.*$
 
     # Code formatting check
     - os: linux
