@@ -10,7 +10,7 @@ categories= ["command-line-utilities", "development-tools"]
 license= "MIT"
 
 [dependencies]
-clap = {version = "^2.25", features = ["yaml"]}
+clap = { git = "https://github.com/kbknapp/clap-rs", features = ["yaml"], branch="master"}
 reqwest = "^0"
 serde = "^1"
 serde_json = "^1"

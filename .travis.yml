@@ -13,6 +13,7 @@ branches:
     - /^.*\.tmp$/
 
 matrix:
+  fast_finish: true
   include:
 
     # Stable channel.
@@ -98,6 +99,18 @@ script: ci/script.sh
 after_script: set +e
 
 before_deploy: ci/before_deploy.sh
+
+deploy:
+  api_key:
+    secure: GV7auOrP6YpQtwTdS3zOcBfCYIbWZEdtaNdZTEYVRo7dxa4uqZfVW/pR1gUf23BuHnArotduzZn7s3Ww5p4WfxuI7k0fNkPwDLWZeWV6XERVRBEf1Rlopkn3QV+YrbRO5nUXcgB+DCbU4AjrWWM1h77QZmieVmH+oLH2bf4qUhLftRH4puYuZS37/q4wbvGDPNNTLWbrhQCod+/1jTDwLCyqKVSqfX6UN7Sc4MX4QqM2UsVO6UsFPc7cHQhVmpJdqgQuhBVbwofzVZfXpvmTbfpGmZ43Se3wBziGSbEo2A/lR8vEJDLYffZ02m0oyS+8KEdl9cbkBrAE+0ttxfFXJ4MLMvPBQsqQFgReRtk+Jnps7dEa32disvEctqixPPC+WCVwWYZT5f/ePxJbcATdicydupJRMvfm/y+wKjUs5WqFvxEf92HMJS5okJGXkrqPXH04Uqktan95BipplJS8IYIKDh04Dmsb/t689kazth0Md2DGUaVFS4rCpP/grHe9no/Bv2VkY56Vg63A57rHxrV0y1/n0KMEMLcyupXkZX8Y3HSU8MD0e/JtvxM938OZoAyBFOBWbuDhCKUaYvYWI+yLkkXbRz6NPEGkk9nUpqp/MIMahcZI0fz08UIQifsQ051wEM4kVufGljRXkXCf9TVkRytErf+HqDJUDOiB7LQ=
+
+  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  on:
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
+  provider: releases
+  skip_cleanup: true
 
 notifications:
   email:
