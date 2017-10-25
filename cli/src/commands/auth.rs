@@ -5,6 +5,8 @@ use super::*;
 use super::Processable;
 use api::TokenService;
 use api::Token;
+use api::token::TokenBody;
+use std::borrow::Cow;
 
 pub struct AuthCommand {}
 
@@ -18,7 +20,9 @@ impl Processable for AuthCommand {
         if let Ok(t) = env::var("RUNDECK_TOKEN") {
             // If Token
             //  -> Check if valid
-            if client.check_connectivity().is_err() {
+            // if client.check_connectivity().is_err() {
+                if let Err(e) = client.check_connectivity() {
+                    println!("{:?}", e);
                 //  -> If Not
                 //      -> Log with user:password
                 info!("It seems that you already have a RUNDECK_TOKEN");
@@ -30,10 +34,9 @@ impl Processable for AuthCommand {
 
                 self.display_token(client, username, password);
             } else {
-                info!("Your token is valid");
-                info!("\n     export RUNDECK_TOKEN=");
-                info!("{}", t);
-                info!("");
+                info!("Your token is valid\n");
+                println!("{}", t);
+                info!("\n     export RUNDECK_TOKEN={}", t);
             }
         } else {
             info!("Your RUNDECK_TOKEN is missing");
@@ -75,7 +78,9 @@ impl AuthCommand {
         rundeck
             .auth(username.clone(), password)
             .chain_err(|| "Fail to auth")?;
+
         rundeck.check_connectivity().chain_err(|| "Fail")?;
+
         let s =
             TokenService::from_client(&rundeck).chain_err(|| "Cannot create a valid TokenService")?;
 
@@ -92,10 +97,39 @@ impl AuthCommand {
         if !v.is_empty() {
             match v[0].token {
                 Some(ref t) => Ok(t.to_string()),
-                None => bail!("No token"),
+                None => self.create_token(&s, &username),
             }
         } else {
-            bail!("No token")
+            self.create_token(&s, &username)
+        }
+    }
+
+    fn create_token(&self, service: &TokenService, user: &str) -> Result<String> {
+        let body = TokenBody {
+            user: Cow::from(user),
+            roles: vec![
+                Cow::from("user"),
+                Cow::from("deploy"),
+                Cow::from("build"),
+                Cow::from("architect"),
+                Cow::from("admin"),
+            ],
+            duration: Cow::from("30d"),
+        };
+
+        match service.create(&body) {
+            Ok(t) => {
+                let t = match t.token {
+                    Some(t) => t.to_string(),
+                    None => {
+                        println!("No token");
+                        bail!("fail")
+                    }
+                };
+
+                Ok(t)
+            }
+            Err(e) => bail!("fail {:#?}", e),
         }
     }
 

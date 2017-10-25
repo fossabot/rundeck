@@ -22,7 +22,10 @@ impl<'a> ProjectService<'a> {
 
     pub fn list(&self) -> Vec<Project> {
         let mut filters: Vec<&str> = Vec::new();
-        let ret = self.client.perform_get("projects", &mut filters).unwrap();
+        let ret = match self.client.perform_get("projects", &mut filters) {
+            Ok(v) => v,
+            Err(e) => panic!(e),
+        };
 
         serde_json::from_str(&ret).unwrap()
     }
