@@ -19,6 +19,8 @@ prettytable-rs = "^0.6"
 dialoguer = "0.1.0"
 rundeck-api = "0.1.0"
 error-chain = "*"
+fern = "0.4.3"
+log = "0.3"
 
 [dev-dependencies]
 mockito = "0.8.2"
