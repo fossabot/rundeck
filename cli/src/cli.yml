@@ -5,6 +5,12 @@ about: |
 
     The Rundeck Command Line Interface is a tool to manage, run and display jobs and projects.
     It use the Rundeck API, you must define a RUNDECK_URL and a RUNDECK_TOKEN.
+args:
+    - verbose:
+        short: v
+        global: true
+        multiple: true
+        help: Sets the level of verbosity
 subcommands:
     - auth:
         about: Authenticate with username/password (You should use this to generate a token and then use the token)
