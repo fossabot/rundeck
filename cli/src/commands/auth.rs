@@ -21,23 +21,23 @@ impl Processable for AuthCommand {
             if client.check_connectivity().is_err() {
                 //  -> If Not
                 //      -> Log with user:password
-                println!("It seems that you already have a RUNDECK_TOKEN");
-                println!("Checking if not expired...");
-                println!("Your RUNDECK_TOKEN is expired or invalid");
-                println!("We will fetch or create a new one.");
+                info!("It seems that you already have a RUNDECK_TOKEN");
+                info!("Checking if not expired...");
+                info!("Your RUNDECK_TOKEN is expired or invalid");
+                info!("We will fetch or create a new one.");
+
                 let (username, password) = self.ask_username_password(matches)?;
 
                 self.display_token(client, username, password);
             } else {
-                println!("Your token is valid");
-                print!("\n     export RUNDECK_TOKEN=");
-                print!("{}", t);
-                println!("");
+                info!("Your token is valid");
+                info!("\n     export RUNDECK_TOKEN=");
+                info!("{}", t);
+                info!("");
             }
         } else {
-            println!("failllll");
-            print!("Your RUNDECK_TOKEN is missing");
-            print!("We will fetch or create a new one.");
+            info!("Your RUNDECK_TOKEN is missing");
+            info!("We will fetch or create a new one.");
             let (username, password) = self.ask_username_password(matches)?;
 
             self.display_token(client, username, password);
@@ -51,14 +51,13 @@ impl AuthCommand {
     fn display_token(&self, client: &Client, username: String, password: String) {
         match self.fetch_or_create_token(client, username, password) {
             Ok(t) => {
-                println!("Here's your token: {}", t);
-                println!("Use this token with:");
-                print!("\n     export RUNDECK_TOKEN=");
-                print!("{}", t);
-                println!("");
+                info!("Here's your token: {}", t);
+                info!("Use this token with:");
+                info!("\n     export RUNDECK_TOKEN=");
+                info!("{}", t);
             }
             Err(e) => {
-                println!("{:?}", e);
+                error!("{:?}", e);
             }
         }
     }
@@ -70,6 +69,8 @@ impl AuthCommand {
         password: String,
     ) -> Result<String> {
         let mut rundeck = client.clone();
+
+
         rundeck.erase_token();
         rundeck
             .auth(username.clone(), password)
