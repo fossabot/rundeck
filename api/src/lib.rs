@@ -8,6 +8,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate url;
 
+#[macro_use] extern crate log;
+
 pub mod error;
 pub mod job;
 pub mod client;
