@@ -4,12 +4,14 @@ use prettytable::cell::Cell;
 use api::Project;
 use api::ProjectService;
 
+#[macro_use] extern crate log;
+
 pub fn list_projects(service: &ProjectService, quiet: bool) {
     let projects: Vec<Project> = service.list();
 
     if quiet {
         for p in projects {
-            println!("{}", p.name);
+            info!("{}", p.name);
         }
     } else {
         let mut table = table!(["NAME", "DESCRIPTION"]);

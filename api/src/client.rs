@@ -169,7 +169,10 @@ impl<'a> Client<'a> {
                     Err(ClientError::InternalClientCreation)
                 }
             }
-            Err(_) => Err(ClientError::InternalClientCreation),
+            Err(e) => {
+                error!("Unable to auth on rundeck {}", e);
+                Err(ClientError::InternalClientCreation)
+            }
         }
     }
 

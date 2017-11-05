@@ -20,6 +20,10 @@ extern crate rundeck_api as api;
 extern crate serde;
 extern crate serde_json;
 
+extern crate fern;
+#[macro_use]
+extern crate log;
+
 use std::env;
 use clap::App;
 use reqwest::header::{Accept, Headers};
@@ -71,6 +75,18 @@ fn start() -> Result<()> {
         .expect("Failed to capture help message");
 
     let matches = app.get_matches();
+
+    let loglevel = match matches.occurrences_of("verbose") {
+        0 => log::LogLevelFilter::Error,
+        1 => log::LogLevelFilter::Info,
+        2 | _ => log::LogLevelFilter::Debug,
+    };
+
+    fern::Dispatch::new()
+        .level(loglevel)
+        .chain(std::io::stdout())
+        .apply()
+        .expect("Fail to create a valid stdout");
 
     match matches.subcommand() {
         ("auth", Some(auth_matches)) => {

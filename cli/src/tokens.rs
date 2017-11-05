@@ -5,6 +5,8 @@ use api::Token;
 use api::token::TokenBody;
 use api::TokenService;
 
+#[macro_use] extern crate log;
+
 pub fn list_tokens(service: &TokenService) {
     let tokens: Vec<Token> = service.list(Vec::new());
     let mut table = table!(["USER", "ID"]);
@@ -27,7 +29,7 @@ pub fn new(service: &TokenService, user: &str, duration: Option<&str>, roles: Ve
     let token = service.create(&body);
 
     match token {
-        Ok(t) => println!("{}", t.id),
-        Err(e) => println!("Error: {}", e.message),
+        Ok(t) => debug!("New token created {}", t.id),
+        Err(e) => error!("Unable to retrieve a valid token : {}", e.message),
     }
 }
