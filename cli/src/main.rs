@@ -21,7 +21,8 @@ extern crate serde;
 extern crate serde_json;
 
 extern crate fern;
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 use std::env;
 use clap::App;
@@ -76,15 +77,16 @@ fn start() -> Result<()> {
     let matches = app.get_matches();
 
     let loglevel = match matches.occurrences_of("verbose") {
-      0 => log::LogLevelFilter::Error,
-      1 => log::LogLevelFilter::Info,
-      2 | _ => log::LogLevelFilter::Debug,
+        0 => log::LogLevelFilter::Error,
+        1 => log::LogLevelFilter::Info,
+        2 | _ => log::LogLevelFilter::Debug,
     };
 
     fern::Dispatch::new()
         .level(loglevel)
         .chain(std::io::stdout())
-        .apply();
+        .apply()
+        .expect("Fail to create a valid stdout");
 
     match matches.subcommand() {
         ("auth", Some(auth_matches)) => {
