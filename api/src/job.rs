@@ -4,6 +4,7 @@ use client::Client;
 use serde_json;
 use std::collections::HashMap;
 use error::ClientError;
+use serde_json::Value;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Job<'a> {
@@ -157,7 +158,6 @@ impl<'a> JobService<'a> {
     }
 
     pub fn run(&self, job: &str, body: &RunBody) {
-        println!("start run");
         let mut body = body.clone();
         if self.client.api_version <= 18 {
             let mut arg_string: Vec<String> = Vec::new();
@@ -169,9 +169,10 @@ impl<'a> JobService<'a> {
         }
 
         let body = serde_json::to_string(&body).unwrap();
-        println!("{:?}", body);
         let r = self.client.perform_post(&format!("job/{}/run", job), &body);
 
-        println!("{:?}", r);
+        let v: Value = serde_json::from_str(&r.unwrap()).unwrap();
+
+        println!("{}", v["permalink"]);
     }
 }

@@ -7,11 +7,13 @@ The Rundeck Command Line Interface is a tool to manage, run and display jobs and
 It use the Rundeck API, you must define a RUNDECK_URL and a RUNDECK_TOKEN.
 
 USAGE:
-    Rundeck CLI [SUBCOMMAND]
+    Rundeck CLI [FLAGS] [SUBCOMMAND]
+
+FLAGS:
+    -v        Sets the level of verbosity
 
 SUBCOMMANDS:
-    auth    Authenticate with username/password (You should use this to generate a token\
-    and then use the token)
+    auth    Authenticate with username/password (You should use this to generate a token and then use the token)
     kill    Kill a job
     list    List projects, job, executions
     new     Create new token, job, ...

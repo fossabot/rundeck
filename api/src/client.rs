@@ -111,9 +111,13 @@ impl<'a> Client<'a> {
             Ok(r) => if r.status().is_success() || r.status().is_redirection() {
                 Ok(())
             } else {
+                println!("{:#?}", r);
                 Err(ClientError::Connectivity)
             },
-            Err(_) => Err(ClientError::Connectivity),
+            Err(e) => {
+                println!("{:#?}", e);
+                Err(ClientError::Connectivity)
+            }
         }
     }
 

@@ -16,6 +16,7 @@
 //     run     Run a particular job
 // ";
 
+static TOKEN_OK_QUIET: &str = "token";
 static TOKEN_OK: &'static str = "Your token is valid
 
      export RUNDECK_TOKEN=token
@@ -26,6 +27,7 @@ mod integration_auth {
     use std::process::Command;
     // use HELP_ALL;
     use TOKEN_OK;
+    use TOKEN_OK_QUIET;
 
     #[test]
     #[ignore]
@@ -64,7 +66,7 @@ mod integration_auth {
             .output()
             .expect("failed to execute process");
 
-        assert_eq!(String::from_utf8_lossy(&output.stdout), "token");
+        assert_eq!(String::from_utf8_lossy(&output.stdout), TOKEN_OK_QUIET);
 
         mockito::reset();
     }

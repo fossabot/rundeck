@@ -88,15 +88,22 @@ impl<'a> TokenService<'a> {
     }
 
     pub fn create(&self, body: &TokenBody) -> Result<Token, ApiError> {
+        println!("{:#?}", &serde_json::to_string(&body).unwrap());
         match self.client
             .perform_post("tokens", &serde_json::to_string(&body).unwrap())
         {
             Ok(ret) => Ok(serde_json::from_str(&ret).unwrap()),
             Err(ret) => Err(match ret {
-                ClientError::BadRequest(s) => match serde_json::from_str(&s) {
-                    Ok(ret) => ret,
-                    Err(_) => ApiError::new(true, 0, "", ""),
-                },
+                ClientError::BadRequest(s) => {
+                    println!("{:#?}", s);
+                    match serde_json::from_str(&s) {
+                        Ok(ret) => ret,
+                        Err(e) => {
+                            println!("{:#?}", e);
+                            ApiError::new(true, 0, "", "")
+                        }
+                    }
+                }
                 _ => ApiError::new(true, 0, "", ""),
             }),
         }
