@@ -1,6 +1,4 @@
-// extern crate assert_cli;
-
-static HELP_ALL: &'static str = "Rundeck CLI 1.0
+static HELP_ALL: &str = "Rundeck CLI 1.0
 Simon PAITRAULT <simon.paitrault@gmail.com>
 
 The Rundeck Command Line Interface is a tool to manage, run and display jobs and projects.
@@ -10,10 +8,12 @@ USAGE:
     Rundeck CLI [FLAGS] [SUBCOMMAND]
 
 FLAGS:
+    -q        Only display important informations
     -v        Sets the level of verbosity
 
 SUBCOMMANDS:
-    auth    Authenticate with username/password (You should use this to generate a token and then use the token)
+    auth    Authenticate with username/password \
+    (You should use this to generate a token and then use the token)
     kill    Kill a job
     list    List projects, job, executions
     new     Create new token, job, ...
@@ -23,12 +23,10 @@ SUBCOMMANDS:
 #[cfg(test)]
 mod integration {
     extern crate mockito;
-    // use assert_cli;
     use HELP_ALL;
     use std::process::Command;
 
     #[test]
-    #[ignore]
     fn calling_rundeck_without_args() {
         let _m = mockito::mock("GET", "/20/system/info")
             .match_header("Accept", mockito::Matcher::Any)

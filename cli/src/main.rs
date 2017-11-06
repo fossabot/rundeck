@@ -76,11 +76,14 @@ fn start() -> Result<()> {
 
     let matches = app.get_matches();
 
-    let loglevel = match matches.occurrences_of("verbose") {
-        0 => log::LogLevelFilter::Info,
-        // 0 => log::LogLevelFilter::Error,
-        1 => log::LogLevelFilter::Debug,
-        2 | _ => log::LogLevelFilter::Trace,
+    let loglevel = if matches.is_present("quiet") {
+        log::LogLevelFilter::Error
+    } else {
+        match matches.occurrences_of("verbose") {
+            0 => log::LogLevelFilter::Info,
+            1 => log::LogLevelFilter::Debug,
+            2 | _ => log::LogLevelFilter::Trace,
+        }
     };
 
     fern::Dispatch::new()

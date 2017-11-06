@@ -47,7 +47,6 @@ pub fn list_jobs(
 
 pub fn run(service: &JobService, job_id: &str, node: &str, options: Vec<&str>) {
     // Options to RunBody
-    println!("start cli run");
     let mut body = RunBody {
         arg_string: None,
         filter: Some(node.into()),
