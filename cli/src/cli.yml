@@ -11,6 +11,11 @@ args:
         global: true
         multiple: true
         help: Sets the level of verbosity
+    - quiet:
+        short: q
+        global: true
+        multiple: false
+        help: Only display important informations
 subcommands:
     - auth:
         about: Authenticate with username/password (You should use this to generate a token and then use the token)

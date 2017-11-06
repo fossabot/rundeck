@@ -1,36 +1,29 @@
-// static HELP_ALL: &'static str = "Rundeck CLI 1.0
-// Simon PAITRAULT <simon.paitrault@gmail.com>
-
-// The Rundeck Command Line Interface is a tool to manage, run and display jobs and projects.
-// It use the Rundeck API, you must define a RUNDECK_URL and a RUNDECK_TOKEN.
-
-// USAGE:
-//     Rundeck CLI [SUBCOMMAND]
-
-// SUBCOMMANDS:
-//     auth    Authenticate with username/password (You should use this to generate a token \
-//     and then use the token)
-//     kill    Kill a job
-//     list    List projects, job, executions
-//     new     Create new token, job, ...
-//     run     Run a particular job
-// ";
-
 static TOKEN_OK_QUIET: &str = "token";
-static TOKEN_OK: &'static str = "Your token is valid
+static TOKEN_OK: &'static str = "You already have a valid RUNDECK_TOKEN.
+Your token is:
 
-     export RUNDECK_TOKEN=token
+token
+
+You can use this export command to add it now to your env:
+
+    export RUNDECK_TOKEN=token
+
+Or even better, to your shell profile:
+
+    echo 'export RUNDECK_TOKEN=token' >> ~/.profile
 ";
 #[cfg(test)]
 mod integration_auth {
+    extern crate assert_cli;
+    extern crate environment;
     extern crate mockito;
+
     use std::process::Command;
-    // use HELP_ALL;
+
     use TOKEN_OK;
     use TOKEN_OK_QUIET;
 
     #[test]
-    #[ignore]
     fn calling_rundeck_auth_with_user_pass() {
         let _m = mockito::mock("GET", "/20/system/info")
             .match_header("Accept", mockito::Matcher::Any)
@@ -51,7 +44,6 @@ mod integration_auth {
     }
 
     #[test]
-    #[ignore]
     fn calling_rundeck_auth_with_user_pass_quiet() {
         let _m = mockito::mock("GET", "/20/system/info")
             .match_header("Accept", mockito::Matcher::Any)

@@ -7,6 +7,7 @@ use api::TokenService;
 use api::Token;
 use api::token::TokenBody;
 use std::borrow::Cow;
+use std::io::Write;
 
 pub struct AuthCommand {}
 
@@ -21,8 +22,8 @@ impl Processable for AuthCommand {
             // If Token
             //  -> Check if valid
             // if client.check_connectivity().is_err() {
-                if let Err(e) = client.check_connectivity() {
-                    println!("{:?}", e);
+            if let Err(e) = client.check_connectivity() {
+                println!("{:?}", e);
                 //  -> If Not
                 //      -> Log with user:password
                 info!("It seems that you already have a RUNDECK_TOKEN");
@@ -34,9 +35,8 @@ impl Processable for AuthCommand {
 
                 self.display_token(client, username, password);
             } else {
-                info!("Your token is valid\n");
-                println!("{}", t);
-                info!("\n     export RUNDECK_TOKEN={}", t);
+                info!("You already have a valid RUNDECK_TOKEN.");
+                self.token_stdout(&t);
             }
         } else {
             info!("Your RUNDECK_TOKEN is missing");
@@ -51,13 +51,20 @@ impl Processable for AuthCommand {
 }
 
 impl AuthCommand {
+    fn token_stdout(&self, token: &str) {
+        info!("Your token is:\n");
+        print!("{}", token);
+        let _ = ::std::io::stdout().flush();
+        info!("\n\nYou can use this export command to add it now to your env:\n");
+        info!("    export RUNDECK_TOKEN={}", token);
+        info!("\nOr even better, to your shell profile:\n");
+        info!("    echo 'export RUNDECK_TOKEN={}' >> ~/.profile", token);
+    }
+
     fn display_token(&self, client: &Client, username: String, password: String) {
         match self.fetch_or_create_token(client, username, password) {
             Ok(t) => {
-                info!("Here's your token: {}", t);
-                info!("Use this token with:");
-                info!("\n     export RUNDECK_TOKEN=");
-                info!("{}", t);
+                self.token_stdout(&t);
             }
             Err(e) => {
                 error!("{:?}", e);
@@ -72,7 +79,6 @@ impl AuthCommand {
         password: String,
     ) -> Result<String> {
         let mut rundeck = client.clone();
-
 
         rundeck.erase_token();
         rundeck
@@ -121,10 +127,7 @@ impl AuthCommand {
             Ok(t) => {
                 let t = match t.token {
                     Some(t) => t.to_string(),
-                    None => {
-                        println!("No token");
-                        bail!("fail")
-                    }
+                    None => bail!("fail"),
                 };
 
                 Ok(t)

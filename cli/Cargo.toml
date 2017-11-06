@@ -10,7 +10,7 @@ categories= ["command-line-utilities", "development-tools"]
 license= "MIT"
 
 [dependencies]
-clap = { git = "https://github.com/kbknapp/clap-rs", features = ["yaml"], branch="master"}
+clap = { version = "*", features = ["yaml"] }
 reqwest = "^0"
 serde = "^1"
 serde_json = "^1"
@@ -25,3 +25,4 @@ log = "0.3"
 [dev-dependencies]
 mockito = "0.8.2"
 assert_cli = "*"
+environment = "*"
