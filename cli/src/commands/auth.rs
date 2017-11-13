@@ -23,7 +23,7 @@ impl Processable for AuthCommand {
             //  -> Check if valid
             // if client.check_connectivity().is_err() {
             if let Err(e) = client.check_connectivity() {
-                println!("{:?}", e);
+                trace!("connectivity error: {:?}", e);
                 //  -> If Not
                 //      -> Log with user:password
                 info!("It seems that you already have a RUNDECK_TOKEN");

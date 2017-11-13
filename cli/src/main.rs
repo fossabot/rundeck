@@ -87,36 +87,66 @@ fn start() -> Result<()> {
     };
 
     fern::Dispatch::new()
-        .level(loglevel)
+        .format(|out, message, record| {
+            if record.level() == log::LogLevel::Info {
+                out.finish(format_args!("{}", message))
+            } else {
+                out.finish(format_args!(
+                    "[{}][{}]{}{}",
+                    record.target(),
+                    record.level(),
+                    match record.level() {
+                        log::LogLevel::Trace => " --> ",
+                        _ => " ",
+                    },
+                    message
+                ))
+            }
+        })
+        .level(log::LogLevelFilter::Off)
+        .level_for("rundeck", loglevel)
+        .level_for("api", loglevel)
         .chain(std::io::stdout())
         .apply()
         .expect("Fail to create a valid stdout");
 
     match matches.subcommand() {
         ("auth", Some(auth_matches)) => {
+            debug!("Auth command detected");
             Command::<commands::AuthCommand>::from_matches(auth_matches, &rundeck).proceed()?
         }
-        ("list", Some(list_matches)) => match list_matches.subcommand() {
-            ("projects", Some(matches)) => {
+
+        ("projects", Some(matches)) => match matches.subcommand() {
+            ("list", Some(matches)) => {
+                debug!("Projects.list command detected");
                 Command::<commands::ListProjectsCommand>::from_matches(matches, &rundeck).proceed()?
             }
-            ("jobs", Some(matches)) => {
+            _ => bail!(ErrorKind::NoCommandProvided(matches.usage().into())),
+        },
+
+        ("jobs", Some(matches)) => match matches.subcommand() {
+            ("list", Some(matches)) => {
+                debug!("Jobs.list command detected");
                 Command::<commands::ListJobsCommand>::from_matches(matches, &rundeck).proceed()?
             }
-            ("executions", Some(executions_matches)) => match executions_matches.subcommand() {
-                ("project", Some(_)) | ("job", Some(_)) | _ => {
-                    bail!(ErrorKind::NoCommandProvided(matches.usage().into()))
-                }
-            },
-            ("tokens", Some(matches)) => {
+            _ => bail!(ErrorKind::NoCommandProvided(matches.usage().into())),
+        },
+
+        ("tokens", Some(matches)) => match matches.subcommand() {
+            ("list", Some(matches)) => {
+                debug!("Tokens.list command detected");
                 Command::<commands::ListTokensCommand>::from_matches(matches, &rundeck).proceed()?
             }
             _ => bail!(ErrorKind::NoCommandProvided(matches.usage().into())),
         },
+
         ("run", Some(matches)) => {
+            debug!("Run command detected");
             Command::<commands::RunCommand>::from_matches(matches, &rundeck).proceed()?
         }
+
         ("kill", Some(matches)) => bail!(ErrorKind::NoCommandProvided(matches.usage().into())),
+
         ("new", Some(matches)) => match matches.subcommand() {
             ("token", Some(matches)) => Command::<commands::TokenCreationCommand>::from_matches(
                 matches,
@@ -124,6 +154,7 @@ fn start() -> Result<()> {
             ).proceed()?,
             _ => bail!(ErrorKind::NoCommandProvided(matches.usage().into())),
         },
+
         ("", None) | _ => bail!(ErrorKind::NoCommandProvided(
             String::from_utf8(help_bytes).unwrap()
         )),

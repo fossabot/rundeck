@@ -16,6 +16,7 @@ impl Processable for TokenCreationCommand {
     }
 
     fn proceed<'a>(&mut self, matches: &ArgMatches, client: &Client<'a>) -> Result<()> {
+        debug!("Entering TokenCreationCommand proceed function");
         let token_service =
             TokenService::from_client(client).chain_err(|| "Cannot create a valid TokenService")?;
 
@@ -31,6 +32,8 @@ impl Processable for TokenCreationCommand {
             roles: roles.into_iter().map(|x| x.into()).collect::<_>(),
             duration: duration.unwrap_or("").into(),
         };
+
+        trace!("Token request body: {:?}", body);
 
         let token = token_service.create(&body);
 

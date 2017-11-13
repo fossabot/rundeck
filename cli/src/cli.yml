@@ -33,47 +33,42 @@ subcommands:
                 multiple: false
                 takes_value: true
 
-    - list:
-        about: List projects, job, executions
+    - projects:
+        about: List and manage projects.
         subcommands:
-            - projects:
+            - list:
                 about: list all projects
-            - jobs:
-                about: list project jobs
+
+    - jobs:
+        about: List and manage jobs.
+        subcommands:
+            - list:
+                about: list projects jobs
                 args:
                     - project:
                         help: Project name
                     - filter:
                         short: f
-                        long: filter
+                        long: fitler
                         takes_value: true
                         multiple: true
-                    - completion:
-                        short: c
-            - tokens:
-                about: list tokens
-            - executions:
-                about: Execution subcommand
-                subcommands:
-                    - project:
-                        about: "List executions of a project's job"
-                        args:
-                            - project:
-                                help: Display executions on a particular project
-                    - job:
-                        about: "List job's executions"
-                        args:
-                            - job_id:
-                                multiple: true
-                                help: Display executions of a particular job
+
+    - tokens:
+        about: List and manage tokens.
+        subcommands:
+            - list:
+                about: list tokens.
+
     - run:
         about: Run a particular job
         args:
             - project:
                 help: Project name
-                required: true
-            - job_id:
                 required: false
+            - job_id:
+                long: job-id
+                required: false
+                takes_value: true
                 help: Job id to run
             - filter:
                 short: f
@@ -89,27 +84,28 @@ subcommands:
                 long: opt
                 takes_value: true
                 multiple: true
-    - new:
-        about: Create new token, job, ...
-        subcommands:
-            - token:
-                args:
-                    - user:
-                        required: true
-                    - duration:
-                        short: d
-                        long: duration
-                        takes_value: true
-                        multiple: false
-                    - role:
-                        short: r
-                        long: role
-                        takes_value: true
-                        multiple: true
 
-    - kill:
-        about: Kill a job
-        args:
-            - job_id:
-                required: true
-                help: Job id to kill
+    # - new:
+    #     about: Create new token, job, ...
+    #     subcommands:
+    #         - token:
+    #             args:
+    #                 - user:
+    #                     required: true
+    #                 - duration:
+    #                     short: d
+    #                     long: duration
+    #                     takes_value: true
+    #                     multiple: false
+    #                 - role:
+    #                     short: r
+    #                     long: role
+    #                     takes_value: true
+    #                     multiple: true
+
+    # - kill:
+    #     about: Kill a job
+    #     args:
+    #         - job_id:
+    #             required: true
+    #             help: Job id to kill

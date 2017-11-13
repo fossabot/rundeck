@@ -31,10 +31,24 @@ mod integration_auth {
             .with_status(200)
             .create();
 
+        let mut args: Vec<String> = vec!["run".into()];
+
+        if let Ok(t) = ::std::env::var("TARGET") {
+            args.push("--target".into());
+            args.push(t.clone());
+        }
+
+        let mut cmd: Vec<String> = ["--", "auth", "-u", "user", "-p", "pass"]
+            .iter_mut()
+            .map(|x| x.to_string())
+            .collect();
+
+        args.append(&mut cmd);
+
         let output = Command::new("cargo")
             .env("RUNDECK_URL", format!("{}/20/", mockito::SERVER_URL))
             .env("RUNDECK_TOKEN", "token")
-            .args(&["run", "--", "auth", "-u", "user", "-p", "pass"])
+            .args(&args)
             .output()
             .expect("failed to execute process");
 
@@ -51,10 +65,24 @@ mod integration_auth {
             .with_status(200)
             .create();
 
+        let mut args: Vec<String> = vec!["run".into()];
+
+        if let Ok(t) = ::std::env::var("TARGET") {
+            args.push("--target".into());
+            args.push(t.clone());
+        }
+
+        let mut cmd: Vec<String> = ["--", "auth", "-q", "-u", "user", "-p", "pass"]
+            .iter_mut()
+            .map(|x| x.to_string())
+            .collect();
+
+        args.append(&mut cmd);
+
         let output = Command::new("cargo")
             .env("RUNDECK_URL", format!("{}/20/", mockito::SERVER_URL))
             .env("RUNDECK_TOKEN", "token")
-            .args(&["run", "--", "auth", "-q", "-u", "user", "-p", "pass"])
+            .args(&args)
             .output()
             .expect("failed to execute process");
 

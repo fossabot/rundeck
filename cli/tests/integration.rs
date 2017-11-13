@@ -1,7 +1,8 @@
 static HELP_ALL: &str = "Rundeck CLI 1.0
 Simon PAITRAULT <simon.paitrault@gmail.com>
 
-The Rundeck Command Line Interface is a tool to manage, run and display jobs and projects.
+The Rundeck Command Line Interface is a tool to manage, run and display \
+jobs and projects.
 It use the Rundeck API, you must define a RUNDECK_URL and a RUNDECK_TOKEN.
 
 USAGE:
@@ -12,12 +13,12 @@ FLAGS:
     -v        Sets the level of verbosity
 
 SUBCOMMANDS:
-    auth    Authenticate with username/password \
+    auth        Authenticate with username/password \
     (You should use this to generate a token and then use the token)
-    kill    Kill a job
-    list    List projects, job, executions
-    new     Create new token, job, ...
-    run     Run a particular job
+    jobs        List and manage jobs.
+    projects    List and manage projects.
+    run         Run a particular job
+    tokens      List and manage tokens.
 ";
 
 #[cfg(test)]
@@ -34,8 +35,15 @@ mod integration {
             .with_status(200)
             .create();
 
+        let mut args: Vec<String> = vec!["run".into()];
+
+        if let Ok(t) = ::std::env::var("TARGET") {
+            args.push("--target".into());
+            args.push(t.clone());
+        }
+
         let output = Command::new("cargo")
-            .args(&["run"])
+            .args(&args)
             .env("RUNDECK_URL", format!("{}/20/", mockito::SERVER_URL))
             .output()
             .expect("failed to execute process");

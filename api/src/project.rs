@@ -21,7 +21,7 @@ impl<'a> ProjectService<'a> {
     }
 
     pub fn list(&self) -> Vec<Project> {
-        let mut filters: Vec<&str> = Vec::new();
+        let mut filters: Vec<String> = Vec::new();
         let ret = match self.client.perform_get("projects", &mut filters) {
             Ok(v) => v,
             Err(e) => panic!(e),

@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::ops::Deref;
 use client::Client;
 use serde_json;
 use std::collections::HashMap;
@@ -91,14 +90,15 @@ impl<'a> Job<'a> {
 /// # Example
 /// ```
 /// use rundeck_api::job::compile_filters;
-/// assert_eq!(compile_filters(&vec![]), Vec::new() as Vec<String>);
+/// assert_eq!(compile_filters(vec![] as Vec<String>), Vec::new() as Vec<String>);
 /// ```
-pub fn compile_filters<'a, I>(filters: &I) -> Vec<String>
+pub fn compile_filters<I>(filters: I) -> Vec<String>
 where
-    I: Deref<Target = [&'a str]> + IntoIterator<Item = &'a str>,
+    I: IntoIterator,
+    I::Item: ToString,
 {
     filters
-        .iter()
+        .into_iter()
         .map(|x| {
             let mut z = x.to_string();
 
@@ -146,18 +146,19 @@ impl<'a> JobService<'a> {
 
     pub fn list<I>(&self, project: &str, filters: I) -> Vec<Job>
     where
-        I: Deref<Target = [&'a str]> + IntoIterator<Item = &'a str>,
+        I: IntoIterator,
+        I::Item: ToString,
     {
-        let mut filters = compile_filters(&filters);
+        let mut filters = compile_filters(filters);
 
         let ret = self.client
             .perform_get(&format!("project/{}/jobs", project), &mut filters)
-            .unwrap();
+            .unwrap_or_else(|_| "[]".to_string());
 
-        serde_json::from_str(&ret).unwrap()
+        serde_json::from_str(&ret).unwrap_or_default()
     }
 
-    pub fn run(&self, job: &str, body: &RunBody) {
+    pub fn run(&self, job: &str, body: &RunBody) -> String {
         let mut body = body.clone();
         if self.client.api_version <= 18 {
             let mut arg_string: Vec<String> = Vec::new();
@@ -173,6 +174,6 @@ impl<'a> JobService<'a> {
 
         let v: Value = serde_json::from_str(&r.unwrap()).unwrap();
 
-        println!("{}", v["permalink"]);
+        format!("{}", v["permalink"].as_str().unwrap())
     }
 }
