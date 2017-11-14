@@ -37,6 +37,7 @@ mod integration {
 
         let mut args: Vec<String> = vec!["run".into()];
 
+        println!("{:?}", ::std::env::var("TARGET"));
         if let Ok(t) = ::std::env::var("TARGET") {
             args.push("--target".into());
             args.push(t.clone());
