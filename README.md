@@ -5,6 +5,7 @@ instance. The main goal is to run and check job's status.
 
 [![Build Status](https://travis-ci.org/Freyskeyd/Rundeck.svg?branch=master)](https://travis-ci.org/Freyskeyd/Rundeck)
 [![Crates.io Version](https://img.shields.io/crates/v/rundeck.svg)](https://crates.io/crates/nom)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FFreyskeyd%2Frundeck.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FFreyskeyd%2Frundeck?ref=badge_shield)
 
 ![preview](./assets/preview.png)
 
@@ -29,3 +30,7 @@ cd Rundeck
 cargo build --release
 cp target/release/rundeck /usr/local/bin/
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FFreyskeyd%2Frundeck.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FFreyskeyd%2Frundeck?ref=badge_large)
